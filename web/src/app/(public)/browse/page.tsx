@@ -1,22 +1,28 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
 
 interface BrowsePageProps {
   searchParams: Promise<{
     q?: string;
     category?: string;
     type?: string;
-    status?: string;
+    location?: string;
   }>;
 }
 
-// React Server Component (FST Unit 3: Native async data fetching with search parameters)
 export default async function BrowsePage({ searchParams }: BrowsePageProps) {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect('/login?callbackUrl=/browse');
+  }
+
   const params = await searchParams;
   const q = params.q || '';
-  const category = params.category || 'All';
-  const type = params.type || 'ALL';
-  const status = params.status || 'ALL';
+  const selectedCategory = params.category || 'All';
+  const selectedType = params.type || 'ALL';
+  const selectedLocation = params.location || '';
 
   const whereClause: Record<string, unknown> = {};
 
@@ -28,211 +34,247 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     ];
   }
 
-  if (category && category !== 'All') {
-    whereClause.category = category;
+  if (selectedCategory && selectedCategory !== 'All') {
+    whereClause.category = selectedCategory;
   }
 
-  if (type && type !== 'ALL') {
-    whereClause.type = type.toUpperCase();
+  if (selectedType && selectedType !== 'ALL') {
+    whereClause.type = selectedType.toUpperCase();
   }
 
-  if (status && status !== 'ALL') {
-    whereClause.status = status.toUpperCase();
+  if (selectedLocation) {
+    whereClause.location = { contains: selectedLocation };
   }
 
-  const items = await prisma.item.findMany({
-    where: whereClause,
-    orderBy: { createdAt: 'desc' },
-    include: { user: true },
+  const [items, categoryCounts] = await Promise.all([
+    prisma.item.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      include: { user: true },
+    }),
+    prisma.item.groupBy({
+      by: ['category'],
+      _count: { id: true },
+    }),
+  ]);
+
+  const countMap: Record<string, number> = {};
+  categoryCounts.forEach((c) => {
+    countMap[c.category] = c._count.id;
   });
 
   const categories = [
-    'All',
-    'ID Cards',
-    'Bottles',
-    'Stationery',
-    'Electronics',
-    'Bags',
-    'Accessories',
-    'Others',
+    { name: 'All', emoji: '✨' },
+    { name: 'ID Cards', emoji: '🪪' },
+    { name: 'Electronics', emoji: '📱' },
+    { name: 'Bags', emoji: '🎒' },
+    { name: 'Water Bottles', emoji: '🍶' },
+    { name: 'Stationery', emoji: '✏️' },
+    { name: 'Accessories', emoji: '⌚' },
+    { name: 'Others', emoji: '📦' },
   ];
 
-  return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-      {/* Header & Search */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-            Browse Lost & Found
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Displaying {items.length} items from SVKM DJSCE campus database
-          </p>
-        </div>
+  const commonLocations = [
+    { label: 'Canteen (Ground Fl)', query: 'Canteen' },
+    { label: 'Central Library (1st Fl)', query: 'Library' },
+    { label: '4th Floor IT Labs', query: 'Lab' },
+    { label: 'Ground Floor Foyer', query: 'Ground' },
+    { label: '6th Floor Classrooms', query: '6th Floor' },
+    { label: 'Gymkhana & Turf', query: 'Gymkhana' },
+  ];
 
-        {/* Search form */}
-        <form method="GET" action="/browse" className="w-full md:w-80 relative">
+  const buildUrl = (updates: Partial<{ q: string; category: string; type: string; location: string }>) => {
+    const p = new URLSearchParams();
+    const newQ = updates.q !== undefined ? updates.q : q;
+    const newCat = updates.category !== undefined ? updates.category : selectedCategory;
+    const newType = updates.type !== undefined ? updates.type : selectedType;
+    const newLoc = updates.location !== undefined ? updates.location : selectedLocation;
+
+    if (newQ) p.set('q', newQ);
+    if (newCat && newCat !== 'All') p.set('category', newCat);
+    if (newType && newType !== 'ALL') p.set('type', newType);
+    if (newLoc) p.set('location', newLoc);
+
+    const qs = p.toString();
+    return `/browse${qs ? `?${qs}` : ''}`;
+  };
+
+  return (
+    <div className="layout">
+      {/* SIDEBAR */}
+      <aside className="sidebar">
+        <form method="GET" action="/browse" className="search-wrap">
+          <span className="search-icon">🔎</span>
           <input
             type="text"
             name="q"
             defaultValue={q}
-            placeholder="Search items, rooms, or keys..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white/90 border border-pink-200 text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 shadow-sm"
+            placeholder="Search items…"
           />
-          <span className="absolute left-3.5 top-2.5 text-slate-400">🔍</span>
-          {category !== 'All' && <input type="hidden" name="category" value={category} />}
-          {type !== 'ALL' && <input type="hidden" name="type" value={type} />}
+          {selectedCategory !== 'All' && <input type="hidden" name="category" value={selectedCategory} />}
+          {selectedType !== 'ALL' && <input type="hidden" name="type" value={selectedType} />}
+          {selectedLocation && <input type="hidden" name="location" value={selectedLocation} />}
         </form>
-      </div>
 
-      {/* Filter Bar */}
-      <div className="flex flex-col gap-4 mb-8">
-        {/* Type pills: ALL, LOST, FOUND */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mr-2">Type:</span>
-          {['ALL', 'LOST', 'FOUND'].map((t) => {
-            const isActive = type === t;
-            const queryParams = new URLSearchParams();
-            if (q) queryParams.set('q', q);
-            if (category !== 'All') queryParams.set('category', category);
-            if (t !== 'ALL') queryParams.set('type', t);
-            if (status !== 'ALL') queryParams.set('status', status);
-
-            return (
-              <Link
-                key={t}
-                href={`/browse?${queryParams.toString()}`}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold transition ${
-                  isActive
-                    ? 'bg-slate-800 text-white shadow'
-                    : 'bg-white/70 text-slate-600 hover:bg-white border border-pink-100'
-                }`}
-              >
-                {t}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mr-2 shrink-0">
-            Category:
-          </span>
-          {categories.map((c) => {
-            const isActive = category === c;
-            const queryParams = new URLSearchParams();
-            if (q) queryParams.set('q', q);
-            if (c !== 'All') queryParams.set('category', c);
-            if (type !== 'ALL') queryParams.set('type', type);
-            if (status !== 'ALL') queryParams.set('status', status);
-
-            return (
-              <Link
-                key={c}
-                href={`/browse?${queryParams.toString()}`}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium shrink-0 transition ${
-                  isActive
-                    ? 'bg-[#e8848f] text-white shadow-sm'
-                    : 'bg-white/70 text-slate-700 hover:bg-pink-100/50 border border-pink-200/50'
-                }`}
-              >
-                {c}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Items Grid */}
-      {items.length === 0 ? (
-        <div className="glass-card p-12 text-center flex flex-col items-center justify-center gap-4">
-          <span className="text-5xl">🔍</span>
-          <h3 className="text-xl font-bold text-slate-800">No matching items found</h3>
-          <p className="text-sm text-slate-500 max-w-md">
-            Try adjusting your search keywords, clearing filters, or report this item if you lost or found it!
-          </p>
-          <div className="flex gap-3">
+        <div className="filter-section">
+          <div className="filter-title">Type</div>
+          <div className="type-filter">
             <Link
-              href="/browse"
-              className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition"
+              href={buildUrl({ type: 'ALL' })}
+              className={`type-btn all ${selectedType === 'ALL' ? 'active' : ''}`}
             >
-              Reset Filters
+              All
             </Link>
             <Link
-              href="/post"
-              className="px-4 py-2 rounded-full bg-[#e8848f] text-white text-xs font-semibold transition"
+              href={buildUrl({ type: 'LOST' })}
+              className={`type-btn lost ${selectedType === 'LOST' ? 'active' : ''}`}
             >
-              Report New Item
+              🔴 Lost
+            </Link>
+            <Link
+              href={buildUrl({ type: 'FOUND' })}
+              className={`type-btn found ${selectedType === 'FOUND' ? 'active' : ''}`}
+            >
+              🟢 Found
             </Link>
           </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((item) => (
-            <Link
-              key={item.id}
-              href={`/items/${item.id}`}
-              className="glass-card overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-lg transition duration-200"
-            >
-              {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition duration-300"
-                />
-              ) : (
-                <div className="w-full h-48 bg-gradient-to-br from-pink-100 to-indigo-100 flex items-center justify-center text-5xl">
-                  📦
-                </div>
-              )}
 
-              <div className="p-5 flex flex-col flex-1 gap-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                      item.type === 'LOST' ? 'badge-lost' : 'badge-found'
-                    }`}
-                  >
-                    {item.type}
-                  </span>
-                  <span
-                    className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
-                      item.status === 'RESOLVED'
-                        ? 'badge-resolved'
-                        : item.status === 'CLAIMED'
-                        ? 'badge-claimed'
-                        : 'bg-emerald-50 text-emerald-700'
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </div>
-
-                <h3 className="font-bold text-slate-800 text-base line-clamp-1 group-hover:text-pink-600 transition">
-                  {item.title}
-                </h3>
-
-                <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed flex-1">
-                  {item.description}
-                </p>
-
-                <div className="text-xs text-slate-500 flex flex-col gap-1 pt-2 border-t border-pink-100/60">
-                  <div className="flex items-center justify-between">
-                    <span>📍 {item.location}</span>
-                    <span>📁 {item.category}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span>📅 {item.dateOccurred}</span>
-                    <span className="font-semibold text-pink-600 group-hover:underline">Details & Claim →</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
+        <div className="filter-section">
+          <div className="filter-title">Category</div>
+          <div className="cat-filter">
+            {categories.map((c) => {
+              const isActive = selectedCategory === c.name;
+              const count = c.name === 'All' ? items.length : countMap[c.name] || 0;
+              return (
+                <Link
+                  key={c.name}
+                  href={buildUrl({ category: c.name })}
+                  className={`cat-btn ${isActive ? 'active' : ''}`}
+                >
+                  <span>{c.emoji}</span>
+                  <span>{c.name}</span>
+                  <span className="cat-count">{count}</span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      )}
+
+        <div className="filter-section">
+          <div className="filter-title">Common Locations</div>
+          <div className="loc-options">
+            {commonLocations.map((loc) => {
+              const isActive = selectedLocation === loc.query;
+              return (
+                <Link
+                  key={loc.query}
+                  href={buildUrl({ location: isActive ? '' : loc.query })}
+                  className={`loc-btn ${isActive ? 'active' : ''}`}
+                >
+                  📍 {loc.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <Link href="/browse" className="clear-btn">
+          ✕ Clear Filters
+        </Link>
+      </aside>
+
+      {/* MAIN */}
+      <main className="main">
+        <div className="main-header">
+          <h1 className="main-title">
+            Browse Items{' '}
+            <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-s)' }}>
+              ({items.length} {items.length === 1 ? 'item' : 'items'})
+            </span>
+          </h1>
+          <div className="main-actions">
+            <Link href="/post" className="post-btn">
+              + Post New Item
+            </Link>
+          </div>
+        </div>
+
+        {/* HOTSPOT BAR */}
+        <div className="hotspot-bar">
+          <span>🔥</span>
+          <div>
+            <strong>Campus Hotspot Alert:</strong> Canteen and 1st Floor Central Library are
+            today&apos;s top reported locations. Check the security counter first!
+          </div>
+        </div>
+
+        {/* AI BANNER */}
+        <Link href="/swipe" className="ai-banner">
+          <div className="ai-icon">🤖</div>
+          <div className="ai-text">
+            <h4>Gemini AI Match Suggestions Active</h4>
+            <p>Our smart neural model automatically analyzes descriptions, categories, and timestamps to surface matches.</p>
+          </div>
+          <div className="ai-arrow">→</div>
+        </Link>
+
+        {/* ITEMS GRID */}
+        {items.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '64px 24px', color: 'var(--text-s)' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🔎</div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text)', marginBottom: '6px' }}>
+              No items match your criteria
+            </h3>
+            <p style={{ fontSize: '0.9rem', marginBottom: '18px' }}>
+              Try searching with fewer filters or post a new lost/found report.
+            </p>
+            <Link href="/browse" className="post-btn" style={{ display: 'inline-block' }}>
+              Reset Filters
+            </Link>
+          </div>
+        ) : (
+          <div className="items-grid">
+            {items.map((item) => {
+              const catObj = categories.find((c) => c.name === item.category);
+              const emoji = catObj?.emoji || '📦';
+              const isLost = item.type === 'LOST';
+
+              return (
+                <div key={item.id} className="item-card">
+                  <div className="item-img">
+                    <span className="item-img-bg">{emoji}</span>
+                    <span style={{ position: 'relative', zIndex: 1 }}>{emoji}</span>
+                    <span className={`item-type-badge ${isLost ? 'badge-lost' : 'badge-found'}`}>
+                      {item.type}
+                    </span>
+                    {item.isHotspot && (
+                      <span className="ai-match-badge">🔥 Hotspot</span>
+                    )}
+                  </div>
+                  <div className="item-body">
+                    <div className="item-cat">{item.category}</div>
+                    <div className="item-name">{item.title}</div>
+                    <div className="item-desc">{item.description}</div>
+                    <div className="item-meta">
+                      <span>📍 {item.location}</span>
+                      <span>📅 {item.dateOccurred}</span>
+                    </div>
+                    <div className="item-footer">
+                      <Link href={`/items/${item.id}`} className="btn-sm btn-view">
+                        View Details
+                      </Link>
+                      <Link href={`/swipe`} className="btn-sm btn-swipe">
+                        Match / Swipe
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </main>
     </div>
   );
 }

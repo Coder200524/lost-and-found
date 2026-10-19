@@ -91,3 +91,9 @@ export async function resolveClaimAction(claimId: string, status: 'APPROVED' | '
     return { success: false, error: 'Failed to update claim status.' };
   }
 }
+
+export async function resolveClaimFormAction(formData: FormData): Promise<void> {
+  const claimId = formData.get('claimId') as string;
+  const action = formData.get('action') as 'APPROVED' | 'REJECTED';
+  await resolveClaimAction(claimId, action);
+}

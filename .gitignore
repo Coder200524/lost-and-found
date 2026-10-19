@@ -17,6 +17,7 @@ android/.gradle
 ios/.symlinks
 
 # Local environment & database
+.env
 *.local
 .env*.local
 dev.db-journal

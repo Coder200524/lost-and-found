@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
@@ -33,6 +33,10 @@ export async function generateMetadata({ params }: ItemPageProps): Promise<Metad
 export default async function ItemDetailPage({ params }: ItemPageProps) {
   const { id } = await params;
   const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect(`/login?callbackUrl=/items/${id}`);
+  }
 
   const item = await prisma.item.findUnique({
     where: { id },

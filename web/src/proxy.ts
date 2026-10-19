@@ -6,12 +6,19 @@ export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('findora_session')?.value;
 
-  // Protected routes
-  const isAdminRoute = pathname.startsWith('/admin');
-  const isPostRoute = pathname.startsWith('/post');
-  const isProfileRoute = pathname.startsWith('/profile');
+  // Protected routes: browse, post, swipe, chat, items, profile, admin
+  const isProtectedRoute =
+    pathname === '/browse' || pathname.startsWith('/browse/') ||
+    pathname === '/post' || pathname.startsWith('/post/') ||
+    pathname === '/swipe' || pathname.startsWith('/swipe/') ||
+    pathname === '/chat' || pathname.startsWith('/chat/') ||
+    pathname.startsWith('/items/') ||
+    pathname === '/profile' || pathname.startsWith('/profile/') ||
+    pathname === '/admin' || pathname.startsWith('/admin/');
 
-  if (isAdminRoute || isPostRoute || isProfileRoute) {
+  const isAdminRoute = pathname === '/admin' || pathname.startsWith('/admin/');
+
+  if (isProtectedRoute) {
     if (!token) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
@@ -30,7 +37,9 @@ export default function proxy(request: NextRequest) {
         }
       }
     } catch {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
@@ -38,5 +47,19 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/post/:path*', '/profile/:path*'],
+  matcher: [
+    '/browse',
+    '/browse/:path*',
+    '/post',
+    '/post/:path*',
+    '/swipe',
+    '/swipe/:path*',
+    '/chat',
+    '/chat/:path*',
+    '/items/:path*',
+    '/profile',
+    '/profile/:path*',
+    '/admin',
+    '/admin/:path*',
+  ],
 };

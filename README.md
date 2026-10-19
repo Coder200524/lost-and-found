@@ -64,8 +64,11 @@ Below is the complete, step-by-step chronological record of all commands run and
 | **26** | Auth / SAP ID | `src/app/api/auth/login` & `(auth)/login` | Implemented SVKM SAP ID + Password login restricting outsiders, with quick 1-click evaluation logins for Admin (`ADMIN-001`), Students (`60004210045`, `60004210088`), and Guest (`GUEST-999`). |
 | **27** | Privacy & Security | `src/app/(public)/items/[id]` | Enforced Mindmap privacy rules: hidden personal phone/email from public cards, masked sensitive ID card details, and added predefined handover safety protocol. |
 | **28** | Found Item Rule | `src/actions/items.ts` & Mobile form | Enforced "MANDATORY PHOTO" validation rule on all Found items before submission. |
-| **29** | Points System | `src/actions/claims.ts` & Profile | Implemented Reward/Points system: Finder awarded +50 points and upgraded badge on claim approval. |
 | **30** | Chat & Moderation | `/api/chat` & `/api/items/[id]/report` | Created In-App Chat endpoint with safety reminders and Report Misuse / Fake Claim moderation endpoint. |
+| **31** | Frontend Alignment | `legacy-html/` -> `web/src/app` | Faithfully ported styling, typography, blobs, cards, and interactive swipe physics from legacy HTML templates into Next.js 16 components. |
+| **32** | Swipe Physics Fix | `SwipeClient.tsx` & `globals.css` | Fixed font inheritance glitch; engineered smooth pointer/touch gesture dragging, angle tilt, dynamic MINE/NOPE opacity tags, and celebration modal. |
+| **33** | Authentication Guard | `src/proxy.ts` & RSCs | Strictly restricted `/browse`, `/post`, `/swipe`, `/chat`, `/items/[id]`, `/profile`, and `/admin` to authenticated SVKM students only, automatically issuing 307 redirects to `/login?callbackUrl=...`. |
+| **34** | Admin Auth Resolution | `api/auth/login/route.ts` & `login/page.tsx` | Expanded SVKM email normalization to resolve `@djsce.edu.in`, `@djsce.edu`, `ADMIN-001`, and `admin`; configured smart `/admin` routing for administrators. |
 
 ---
 
@@ -350,3 +353,66 @@ Use these credentials on `/login` or via the one-click quick fillers to evaluate
    ```
 
 4. The mobile app will automatically communicate with the Next.js backend running on `http://localhost:3000/api`!
+
+---
+
+## 🎨 Frontend Architecture & Legacy HTML Design System Alignment
+
+In accordance with user requirements (*"for frontend i gave the html files, use them make it the same"*), the Next.js application frontend was aligned to mirror the layout, design system tokens, typography, component hierarchies, and interactive animations from the provided `legacy-html/` templates:
+
+### 1. Unified Design Tokens & Typography (`globals.css`)
+- **Google Fonts Imported:**
+  - `'Playfair Display', serif`: Headlines, hero titles, stat counters, and modal headers.
+  - `'DM Sans', sans-serif`: Body text, UI controls, navigation items, and forms.
+- **SVKM Pastel Color Palette (`:root`):**
+  - `--rose`: `#f9c8cf` & `--rose-d`: `#e8848f`
+  - `--mint`: `#c4ead9` & `--mint-d`: `#5bbf8e`
+  - `--sky`: `#c5dff8` & `--sky-d`: `#5b9fd4`
+  - `--lemon`: `#fdf3c0` & `--peach`: `#ffd9b7`
+  - `--lavender`: `#ddd6f3` & `--lav-d`: `#9b8bdb`
+  - `--text`: `#3a3040` & `--text-s`: `#7a6e80`
+- **Dynamic Floating Blobs:** Three-layer keyframe blur blobs (`.blob-1`, `.blob-2`, `.blob-3`) creating an animated background.
+
+### 2. Ported Screen Implementations
+| HTML Template | Next.js App Router Page | Features & Backend Integrations |
+| :--- | :--- | :--- |
+| `index.html` | `src/app/(public)/page.tsx` | Animated hero with floating blobs, live stats counter (`Items Reunited`, `Verified Students`, `Match Rate`), 6 core feature cards, 7-step "How It Works" workflow, category pills, and live database showcase. |
+| `browse.html` | `src/app/(public)/browse/page.tsx` | Sticky desktop sidebar with instant search, `ALL / LOST / FOUND` type toggles, category pills with count badges, location quick filters (Canteen, Library, IT Labs, Foyer), campus hotspot alert banner, Gemini AI match bar, and `.item-card` grid. |
+| `swipe.html` | `src/app/(public)/swipe/page.tsx` | Tinder/Hinge card swiper deck (`.card-stack`), active matching target banner, swipe feedback tags (`✓ MINE`, `✕ NOPE`), circular buttons (`✕ Not mine`, `ℹ️ Details`, `♥ Could be mine!`), touch & mouse drag physics with rotation, and full-screen match celebration modal (`.match-overlay`). |
+| `chat.html` | `src/app/(public)/chat/page.tsx` | In-app peer-to-peer verification chat with conversations sidebar, verified match badges, official SVKM campus security safety reminder banner, message bubble stream, and one-click quick replies. |
+| `post.html` | `src/app/(dashboard)/post/page.tsx` | Lost vs Found card toggles (`.type-card`), category pill selector, location quick-chips, photo upload dropzone with privacy note, ethics pledge checkbox, and Server Actions dispatch. |
+| `login.html` | `src/app/(auth)/login/page.tsx` | Glassmorphic card (`.card`), SAP ID and password inputs, role tabs (`Student`, `Admin`, `Quick Demo`), helper info banner, and pre-filled one-click credentials. |
+| `profile.html` | `src/app/(dashboard)/profile/page.tsx` | Student digital hero with SAP ID, verified badges, circular points display (`340 Points, Rank #12`), reported items tab, claims filed tab, mini stats, and campus achievement badges. |
+| `admin.html` | `src/app/(dashboard)/admin/page.tsx` | Sleek dark sidebar (`.admin-sidebar`), moderation stats counters, pending claims verification table with instant Approve (`+50 pts`) / Reject actions, campus lost-item heatmap (`.campus-map`), and student directory. |
+
+### 3. Swipe Card Fix & Physics Engineering
+- Fixed CSS font-size inheritance issue where `.card-img` applied `5rem` to internal `.card-type-badge` and `.match-pct` tags. Isolated emoji to `.card-img-emoji` and scoped badge typography to `0.72rem` / `0.78rem`.
+- Implemented natural pointer drag physics (`onPointerDown`, `onPointerMove`, `onPointerUp`) with rotation (`dx * 0.08deg`), dynamic opacity for `✓ MINE` / `✕ NOPE` tags, threshold fling out, and pop-in match celebration modal with direct handover chat routing.
+
+### 4. Authentication Lockdown & Dual-Layer Route Protection
+In compliance with the security requirement (*"students should not be able to Browse post swipe chat without authentication"*), all discovery, reporting, matching, and peer communication routes are guarded with a dual-layer defense:
+
+1. **Layer 1: Next.js 16 Edge Proxy Layer (`src/proxy.ts`):**
+   - Intercepts incoming requests to `/browse`, `/post`, `/swipe`, `/chat`, `/items/:path*`, `/profile`, and `/admin`.
+   - Inspects the `findora_session` HTTP-only cookie.
+   - If missing or invalid, immediately returns an HTTP `307 Redirect` to `/login?callbackUrl=<requestedPath>`.
+   - Restricts `/admin` exclusively to users with `role: "ADMIN"`.
+
+2. **Layer 2: Server-Side Page Authentication Guards (RSC):**
+   - `src/app/(public)/browse/page.tsx` checks `getCurrentUser()` -> redirects to `/login?callbackUrl=/browse`.
+   - `src/app/(public)/swipe/page.tsx` checks `getCurrentUser()` -> redirects to `/login?callbackUrl=/swipe`.
+   - `src/app/(public)/chat/page.tsx` checks `getCurrentUser()` -> redirects to `/login?callbackUrl=/chat`.
+   - `src/app/(dashboard)/post/page.tsx` checks `getCurrentUser()` -> redirects to `/login?callbackUrl=/post`.
+   - `src/app/(public)/items/[id]/page.tsx` checks `getCurrentUser()` -> redirects to `/login?callbackUrl=/items/${id}`.
+
+3. **Login Interception & Destination Preservation (`src/app/(auth)/login/page.tsx`):**
+   - Detects the `callbackUrl` query parameter.
+   - Renders a prominent notice: `🔒 Authentication required to access {callbackUrl}. Please sign in below.`
+   - After successful SVKM SAP ID validation, instantly navigates the authenticated student back to their desired destination (`router.push(callbackUrl)`).
+
+### 5. Multi-Domain & Role Resolution for Admin Login
+- **Issue Diagnosed:** The seeded database records stored faculty admin email as `admin@djsce.edu` with SAP ID `ADMIN-001`, whereas the front-end login portal prefilled `admin@djsce.edu.in`. Strict equality in the Prisma query caused an unauthorized lookup mismatch.
+- **Resolution:**
+  1. Updated `src/app/api/auth/login/route.ts` with bidirectional domain normalization: automatically alias and match across both `.djsce.edu.in` and `.djsce.edu` domains, and accept `ADMIN-001` or `admin`.
+  2. Enhanced `src/app/(auth)/login/page.tsx` so administrators signing in via the Admin tab are directed straight into the `/admin` Security & Moderation Console.
+

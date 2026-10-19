@@ -1,228 +1,315 @@
 'use client';
 
-// SVKM Authentication & Role-Based Access Control (Mindmap: SAP ID + Password Login)
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const [isRegister, setIsRegister] = useState(false);
+  const searchParams = useSearchParams();
+  const callbackParam = searchParams.get('callbackUrl');
+  const callbackUrl = callbackParam || '/browse';
+
+  const [activeTab, setActiveTab] = useState<'student' | 'admin' | 'demo'>('student');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Form states
   const [identifier, setIdentifier] = useState('60004210045');
   const [password, setPassword] = useState('student123');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [sapId, setSapId] = useState('');
-  const [department, setDepartment] = useState('Information Technology');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-    const payload = isRegister
-      ? { name, email, sapId, password, department, collegeId: sapId }
-      : { email: identifier, sapId: identifier, password };
-
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ email: identifier, sapId: identifier, password }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setError(data.error || 'Authentication failed');
+        setError(data.error || 'Authentication failed. Please verify SAP ID and password.');
         return;
       }
 
-      router.push('/browse');
+      // If user is ADMIN and logs in via Admin tab or has no special callback, go to /admin
+      let destination = callbackUrl;
+      if (data.user?.role === 'ADMIN' && (activeTab === 'admin' || !callbackParam || callbackParam === '/browse')) {
+        destination = '/admin';
+      }
+
+      router.push(destination);
       router.refresh();
     } catch {
-      setError('Network error, please try again');
+      setError('Network error, please check connection.');
     } finally {
       setLoading(false);
     }
   }
 
-  function handleQuickFill(presetId: string, presetPass: string) {
-    setIdentifier(presetId);
-    setPassword(presetPass);
+  function handleTabChange(tab: 'student' | 'admin' | 'demo') {
+    setActiveTab(tab);
+    setError('');
+    if (tab === 'student') {
+      setIdentifier('60004210045');
+      setPassword('student123');
+    } else if (tab === 'admin') {
+      setIdentifier('admin@djsce.edu.in');
+      setPassword('admin123');
+    } else if (tab === 'demo') {
+      setIdentifier('60004210088');
+      setPassword('student123');
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="glass-card w-full max-w-md p-8 shadow-2xl border border-pink-200">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 mb-2">
-            <span className="text-3xl">🌸</span>
-            <span className="text-2xl font-black text-slate-800 tracking-tight">FinDora</span>
-          </Link>
-          <div className="inline-block px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold uppercase tracking-wider mb-2">
-            🔒 SVKM Members Only (Restricted)
-          </div>
-          <h2 className="text-xl font-bold text-slate-800">
-            {isRegister ? 'Register SVKM Student' : 'SVKM SAP ID Sign In'}
-          </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Dwarkadas J. Sanghvi College of Engineering
-          </p>
+    <div
+      style={{
+        background: 'rgba(255, 255, 255, 0.88)',
+        backdropFilter: 'blur(20px)',
+        border: '1.5px solid rgba(255, 255, 255, 0.95)',
+        borderRadius: '24px',
+        padding: '44px 40px',
+        boxShadow: '0 16px 64px rgba(140, 100, 130, 0.12)',
+      }}
+    >
+      {/* LOGO */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+        <div
+          style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, var(--rose), var(--lavender))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.4rem',
+          }}
+        >
+          🔍
+        </div>
+        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.35rem', fontWeight: 700, color: 'var(--text)' }}>
+          Fin<span style={{ color: 'var(--rose-d)' }}>Dora</span>
+        </div>
+      </div>
+
+      <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.75rem', fontWeight: 700, marginBottom: '6px' }}>
+        Welcome back
+      </h2>
+      <p style={{ fontSize: '0.9rem', color: 'var(--text-s)', marginBottom: '28px' }}>
+        Sign in with your SVKM SAP ID to continue
+      </p>
+
+      {/* AUTH REQUIRED NOTICE */}
+      {callbackParam && (
+        <div
+          style={{
+            background: 'var(--rose)',
+            color: 'var(--rose-d)',
+            padding: '10px 14px',
+            borderRadius: '12px',
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <span>🔒</span>
+          <span>Authentication required to access {callbackParam}. Please sign in below.</span>
+        </div>
+      )}
+
+      {/* TABS */}
+      <div
+        style={{
+          display: 'flex',
+          background: 'rgba(0,0,0,0.05)',
+          borderRadius: '12px',
+          padding: '4px',
+          marginBottom: '24px',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => handleTabChange('student')}
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            padding: '9px',
+            borderRadius: '9px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            border: 'none',
+            background: activeTab === 'student' ? 'white' : 'transparent',
+            color: activeTab === 'student' ? 'var(--text)' : 'var(--text-s)',
+            boxShadow: activeTab === 'student' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+            transition: 'all 0.2s',
+          }}
+        >
+          👨‍🎓 Student
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTabChange('admin')}
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            padding: '9px',
+            borderRadius: '9px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            border: 'none',
+            background: activeTab === 'admin' ? 'white' : 'transparent',
+            color: activeTab === 'admin' ? 'var(--text)' : 'var(--text-s)',
+            boxShadow: activeTab === 'admin' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+            transition: 'all 0.2s',
+          }}
+        >
+          🛡️ Admin
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTabChange('demo')}
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            padding: '9px',
+            borderRadius: '9px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            border: 'none',
+            background: activeTab === 'demo' ? 'white' : 'transparent',
+            color: activeTab === 'demo' ? 'var(--text)' : 'var(--text-s)',
+            boxShadow: activeTab === 'demo' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+            transition: 'all 0.2s',
+          }}
+        >
+          ⚡ Quick Demo
+        </button>
+      </div>
+
+      {error && (
+        <div
+          style={{
+            background: 'var(--rose)',
+            color: 'var(--rose-d)',
+            padding: '10px 14px',
+            borderRadius: '10px',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            marginBottom: '18px',
+          }}
+        >
+          ⚠️ {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div className="field">
+          <label className="form-label">
+            {activeTab === 'admin' ? 'Faculty Admin Email' : 'SVKM SAP ID'}
+          </label>
+          <input
+            type="text"
+            required
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            placeholder={activeTab === 'admin' ? 'admin@djsce.edu.in' : 'e.g. 60004210045'}
+            className="form-input"
+          />
         </div>
 
-        {/* Quick Demo Role Fillers */}
-        <div className="bg-pink-50/70 p-3.5 rounded-xl border border-pink-100 mb-6">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2 flex justify-between">
-            <span>⚡ SVKM SAP ID Presets:</span>
-            <span className="text-pink-600 font-semibold">One-Click</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickFill('60004210045', 'student123')}
-              className="px-2.5 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-[11px] font-bold transition text-left"
-            >
-              👨‍🎓 Rahul: <code className="font-mono text-[10px]">60004210045</code>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('60004210088', 'student123')}
-              className="px-2.5 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 text-[11px] font-bold transition text-left"
-            >
-              👩‍🎓 Priya: <code className="font-mono text-[10px]">60004210088</code>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('ADMIN-001', 'admin123')}
-              className="px-2.5 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-[11px] font-bold transition text-left"
-            >
-              🛡️ Admin: <code className="font-mono text-[10px]">ADMIN-001</code>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('GUEST-999', 'guest123')}
-              className="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 text-[11px] font-bold transition text-left"
-            >
-              👤 Guest: <code className="font-mono text-[10px]">GUEST-999</code>
-            </button>
-          </div>
+        <div className="field">
+          <label className="form-label">Password / Portal Key</label>
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password..."
+            className="form-input"
+          />
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs font-semibold">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-          {isRegister ? (
-            <>
-              <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Aryan Patel"
-                  className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1">SVKM SAP ID (11 digits)</label>
-                <input
-                  type="text"
-                  required
-                  value={sapId}
-                  onChange={(e) => setSapId(e.target.value)}
-                  placeholder="e.g. 60004210099"
-                  className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1">College Email (@djsce.edu)</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. student@djsce.edu"
-                  className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1">Department</label>
-                <select
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                >
-                  <option value="Information Technology">Information Technology</option>
-                  <option value="Computer Engineering">Computer Engineering</option>
-                  <option value="Data Science / AI&DS">Data Science / AI&DS</option>
-                  <option value="Electronics & Telecomm">Electronics & Telecomm</option>
-                </select>
-              </div>
-            </>
-          ) : (
-            <div>
-              <label className="text-xs font-semibold text-slate-600 block mb-1">
-                SVKM SAP ID or College Email
-              </label>
-              <input
-                type="text"
-                required
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="e.g. 60004210045 or student@djsce.edu"
-                className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300 font-medium"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 py-3 rounded-full bg-[#e8848f] hover:bg-[#d86f7b] text-white font-bold text-xs shadow-md transition disabled:opacity-50"
-          >
-            {loading ? 'Verifying SVKM Credentials...' : isRegister ? 'Register SVKM Account' : 'Sign In via SAP ID'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-xs text-slate-500">
-          {isRegister ? 'Already registered?' : 'New SVKM student/staff?'}{' '}
-          <button
-            type="button"
-            onClick={() => {
-              setIsRegister(!isRegister);
-              setError('');
-            }}
-            className="text-pink-600 font-bold hover:underline"
-          >
-            {isRegister ? 'Sign In via SAP ID' : 'Register Account'}
-          </button>
+        {/* INFO BANNER */}
+        <div
+          style={{
+            background: 'var(--lemon)',
+            border: '1.5px solid #f0d870',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'flex-start',
+            fontSize: '0.8rem',
+            color: '#6a5a00',
+            margin: '18px 0',
+          }}
+        >
+          <span>ℹ️</span>
+          <span>
+            {activeTab === 'student' && 'Student account pre-filled with demo credentials (student123).'}
+            {activeTab === 'admin' && 'Admin account pre-filled for faculty moderation access (admin123).'}
+            {activeTab === 'demo' && 'Alternate student profile pre-filled for peer-to-peer testing.'}
+          </span>
         </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary"
+          style={{ width: '100%', justifyContent: 'center', borderRadius: '12px', padding: '14px' }}
+        >
+          {loading ? 'Authenticating...' : 'Sign In →'}
+        </button>
+      </form>
+
+      <div
+        style={{
+          textAlign: 'center',
+          marginTop: '20px',
+          fontSize: '0.82rem',
+          color: 'var(--text-s)',
+        }}
+      >
+        Trouble signing in? Contact{' '}
+        <span style={{ color: 'var(--rose-d)', fontWeight: 600 }}>DJSCE IT Support</span>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
+        <Link
+          href="/"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'var(--text-s)',
+            textDecoration: 'none',
+            fontSize: '0.88rem',
+            marginBottom: '24px',
+          }}
+        >
+          ← Back to Home
+        </Link>
+
+        <Suspense fallback={<div style={{ textAlign: 'center', color: 'var(--text-s)' }}>Loading login form...</div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

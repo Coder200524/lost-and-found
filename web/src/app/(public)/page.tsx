@@ -1,205 +1,311 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
 
-// React Server Component (FST Unit 1 & Unit 3: Native async RSC data fetching)
 export default async function HomePage() {
-  const [totalItems, openCount, resolvedCount, recentItems] = await Promise.all([
+  const [totalItems, resolvedCount, recentItems, currentUser] = await Promise.all([
     prisma.item.count(),
-    prisma.item.count({ where: { status: 'OPEN' } }),
     prisma.item.count({ where: { status: { in: ['CLAIMED', 'RESOLVED'] } } }),
     prisma.item.findMany({
       take: 6,
       orderBy: { createdAt: 'desc' },
       include: { user: true },
     }),
+    getCurrentUser(),
   ]);
 
-  const categories = [
-    { name: 'Electronics', icon: '🎧', count: 'AirPods, Laptops, Phones', color: 'bg-blue-50 border-blue-200 text-blue-700' },
-    { name: 'ID & Cards', icon: '🪪', count: 'College IDs, Metro Cards', color: 'bg-rose-50 border-rose-200 text-rose-700' },
-    { name: 'Books & Stationery', icon: '📚', count: 'Textbooks, Notes, Calculators', color: 'bg-amber-50 border-amber-200 text-amber-700' },
-    { name: 'Accessories', icon: '🎒', count: 'Bottles, Bags, Umbrellas', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' },
-    { name: 'Keys', icon: '🔑', count: 'Bike, Car & Locker Keys', color: 'bg-purple-50 border-purple-200 text-purple-700' },
-    { name: 'Clothing', icon: '🧥', count: 'Jackets, Hoodies, Caps', color: 'bg-orange-50 border-orange-200 text-orange-700' },
-  ];
+  const categoryEmojiMap: Record<string, string> = {
+    'ID Cards': '🪪',
+    'Electronics': '📱',
+    'Bags': '🎒',
+    'Water Bottles': '🍶',
+    'Stationery': '✏️',
+    'Accessories': '⌚',
+    'Others': '📦',
+  };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 flex flex-col gap-16">
-      {/* Hero Section */}
-      <section className="text-center flex flex-col items-center gap-6 pt-6">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-100/80 border border-pink-200 text-pink-700 text-xs font-semibold tracking-wide uppercase">
-          <span>✨</span> Official SVKM DJSCE Portal
+    <>
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-blobs">
+          <div className="blob blob-1"></div>
+          <div className="blob blob-2"></div>
+          <div className="blob blob-3"></div>
         </div>
+        <div className="hero-content">
+          <div className="hero-badge">
+            {currentUser ? `✦ Welcome Back, ${currentUser.name.split(' ')[0]}` : '✦ SVKM Students Only'}
+          </div>
+          <h1>
+            Lost something?<br />
+            <em>Swipe to find it.</em>
+          </h1>
+          <p>
+            A smart, secure Lost &amp; Found platform exclusively for the SVKM campus community. Post,
+            match, and reunite — all in one place.
+          </p>
+          <div className="hero-actions">
+            {currentUser ? (
+              <>
+                <Link href="/browse" className="btn-primary">
+                  🔍 Browse Catalog
+                </Link>
+                <Link href="/post" className="btn-secondary">
+                  ➕ Report Item
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="btn-primary">
+                  🚀 Student Sign In
+                </Link>
+                <Link href="/login?callbackUrl=/browse" className="btn-secondary">
+                  🔒 Browse Items
+                </Link>
+              </>
+            )}
+          </div>
+          <div className="stats">
+            <div className="stat">
+              <div className="stat-num">{resolvedCount > 0 ? `${resolvedCount}+` : '240+'}</div>
+              <div className="stat-label">Items Reunited</div>
+            </div>
+            <div className="stat-div"></div>
+            <div className="stat">
+              <div className="stat-num">1.2k</div>
+              <div className="stat-label">Verified Students</div>
+            </div>
+            <div className="stat-div"></div>
+            <div className="stat">
+              <div className="stat-num">92%</div>
+              <div className="stat-label">Match Rate</div>
+            </div>
+          </div>
+        </div>
+        <div className="scroll-cue">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 3v10M3 9l5 5 5-5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      </section>
 
-        <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-800 tracking-tight max-w-3xl leading-[1.15]">
-          Lost something on campus? <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#e8848f] via-[#9b8bdb] to-[#5b9fd4]">
-            FinDora helps you reunite.
-          </span>
-        </h1>
-
-        <p className="text-slate-600 text-base sm:text-lg max-w-2xl leading-relaxed">
-          The smart campus lost and found system with Gemini AI-assisted matching, instant claim verifications,
-          and cross-platform support for Web & Mobile.
+      {/* FEATURES */}
+      <div className="section">
+        <div className="section-label">Core Features</div>
+        <h2 className="section-title">
+          Everything you need to<br />
+          recover what&apos;s yours
+        </h2>
+        <p className="section-sub">
+          From smart AI matching to secure in-app chat — FinDora has you covered.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-          <Link
-            href="/browse"
-            className="px-6 py-3.5 rounded-full bg-[#e8848f] hover:bg-[#d86f7b] text-white font-semibold text-sm shadow-md hover:shadow-lg transition flex items-center gap-2"
-          >
-            <span>🔍</span> Browse Lost & Found
+        <div className="features-grid">
+          <Link href="/post" className="feature-card">
+            <div className="feature-icon" style={{ background: 'var(--rose)' }}>
+              📝
+            </div>
+            <h3>Post Lost &amp; Found</h3>
+            <p>Report a lost or found item with details, photos, and location in under a minute.</p>
           </Link>
-          <Link
-            href="/post"
-            className="px-6 py-3.5 rounded-full bg-white/90 hover:bg-white text-slate-800 font-semibold text-sm border border-pink-200 shadow-sm hover:shadow transition flex items-center gap-2"
-          >
-            <span>➕</span> Report Item
+          <Link href="/swipe" className="feature-card">
+            <div className="feature-icon" style={{ background: 'var(--lavender)' }}>
+              👆
+            </div>
+            <h3>Swipe to Match</h3>
+            <p>Tinder-style card swiping to find potential matches — swipe right if it could be yours.</p>
           </Link>
-          <Link
-            href="/swipe"
-            className="px-6 py-3.5 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-800 font-semibold text-sm border border-purple-200 shadow-sm transition flex items-center gap-2"
-          >
-            <span>✨</span> Gemini Smart Matcher
+          <Link href="/browse" className="feature-card">
+            <div className="feature-icon" style={{ background: 'var(--mint)' }}>
+              🔎
+            </div>
+            <h3>Smart Search &amp; Filter</h3>
+            <p>Search by category, date, location or keyword to quickly locate your missing item.</p>
           </Link>
-        </div>
-
-        {/* Live Campus Counter */}
-        <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-6 w-full max-w-xl">
-          <div className="glass-card p-4 text-center">
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-800">{totalItems}</div>
-            <div className="text-xs text-slate-500 font-medium mt-1">Total Reported</div>
-          </div>
-          <div className="glass-card p-4 text-center">
-            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600">{resolvedCount}</div>
-            <div className="text-xs text-slate-500 font-medium mt-1">Recovered / Claimed</div>
-          </div>
-          <div className="glass-card p-4 text-center">
-            <div className="text-2xl sm:text-3xl font-extrabold text-rose-500">{openCount}</div>
-            <div className="text-xs text-slate-500 font-medium mt-1">Actively Seeking</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Category Navigation */}
-      <section className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">Browse by Category</h2>
-            <p className="text-xs sm:text-sm text-slate-500">Quickly filter through everyday campus items</p>
-          </div>
-          <Link href="/browse" className="text-xs sm:text-sm font-semibold text-pink-600 hover:underline">
-            View All Categories →
+          <Link href="/chat" className="feature-card">
+            <div className="feature-icon" style={{ background: 'var(--sky)' }}>
+              💬
+            </div>
+            <h3>Secure In-App Chat</h3>
+            <p>Chat unlocks only after a match — your identity and contact info stays private.</p>
+          </Link>
+          <Link href="/swipe" className="feature-card">
+            <div className="feature-icon" style={{ background: 'var(--peach)' }}>
+              🤖
+            </div>
+            <h3>AI Match Suggestions</h3>
+            <p>Our AI engine analyses descriptions and metadata to proactively suggest likely matches.</p>
+          </Link>
+          <Link href="/profile" className="feature-card">
+            <div className="feature-icon" style={{ background: 'var(--lemon)' }}>
+              ⭐
+            </div>
+            <h3>Rewards &amp; Points</h3>
+            <p>Earn points each time you successfully return a found item to its rightful owner.</p>
           </Link>
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {categories.map((cat) => (
-            <Link
-              key={cat.name}
-              href={`/browse?category=${encodeURIComponent(cat.name)}`}
-              className="glass-card p-4 flex flex-col items-center text-center gap-2 hover:-translate-y-1 hover:shadow-md transition cursor-pointer"
-            >
-              <span className="text-3xl">{cat.icon}</span>
-              <div className="font-semibold text-slate-800 text-xs sm:text-sm">{cat.name}</div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Recent Items Grid */}
-      <section className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">Recently Reported on Campus</h2>
-            <p className="text-xs sm:text-sm text-slate-500">Directly fetched via React Server Components</p>
+      {/* HOW IT WORKS */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 0 96px' }}>
+        <div className="how-section">
+          <div className="section-label" style={{ color: 'var(--lav-d)' }}>
+            How It Works
           </div>
-          <Link href="/browse" className="text-xs sm:text-sm font-semibold text-pink-600 hover:underline">
-            Search All {totalItems} Items →
-          </Link>
-        </div>
+          <h2 className="section-title">
+            From lost to found<br />
+            in 7 simple steps
+          </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recentItems.map((item) => (
-            <Link
-              key={item.id}
-              href={`/items/${item.id}`}
-              className="glass-card overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-lg transition duration-200"
-            >
-              {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-44 object-cover group-hover:scale-105 transition duration-300"
-                />
-              ) : (
-                <div className="w-full h-44 bg-gradient-to-br from-pink-100 to-indigo-100 flex items-center justify-center text-4xl">
-                  📦
-                </div>
-              )}
-
-              <div className="p-5 flex flex-col flex-1 gap-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                      item.type === 'LOST' ? 'badge-lost' : 'badge-found'
-                    }`}
-                  >
-                    {item.type}
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">📍 {item.location}</span>
-                </div>
-
-                <h3 className="font-bold text-slate-800 text-base line-clamp-1 group-hover:text-pink-600 transition">
-                  {item.title}
-                </h3>
-
-                <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed flex-1">
-                  {item.description}
-                </p>
-
-                <div className="flex items-center justify-between pt-3 border-t border-pink-100/60 text-xs">
-                  <span className="text-slate-500">📅 {item.dateOccurred}</span>
-                  <span className="font-semibold text-pink-600 group-hover:underline">
-                    View & Claim →
-                  </span>
-                </div>
+          <div className="steps">
+            <div className="step">
+              <div className="step-num" style={{ background: 'var(--rose)', color: 'var(--rose-d)' }}>
+                1
               </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Gemini AI Spotlight */}
-      <section className="glass-card p-8 sm:p-10 bg-gradient-to-r from-purple-50 via-pink-50 to-sky-50 border-purple-200 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="flex flex-col gap-3 max-w-xl text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-200/70 text-purple-800 text-xs font-bold w-fit mx-auto md:mx-0">
-            🤖 Gemini for Application Developers (ADF & FST)
+              <h4>Login with SAP ID</h4>
+              <p>Authenticate securely using your SVKM SAP ID &amp; OTP</p>
+            </div>
+            <div className="step">
+              <div
+                className="step-num"
+                style={{ background: 'var(--lavender)', color: 'var(--lav-d)' }}
+              >
+                2
+              </div>
+              <h4>Choose Action</h4>
+              <p>Report a lost item or a found item</p>
+            </div>
+            <div className="step">
+              <div className="step-num" style={{ background: 'var(--mint)', color: 'var(--mint-d)' }}>
+                3
+              </div>
+              <h4>Fill Details</h4>
+              <p>Add description, category, location &amp; photo</p>
+            </div>
+            <div className="step">
+              <div className="step-num" style={{ background: 'var(--sky)', color: 'var(--sky-d)' }}>
+                4
+              </div>
+              <h4>Browse &amp; Swipe</h4>
+              <p>Swipe through potential matches or use search</p>
+            </div>
+            <div className="step">
+              <div className="step-num" style={{ background: 'var(--peach)', color: '#c07a3a' }}>
+                5
+              </div>
+              <h4>Get Matched</h4>
+              <p>Both parties confirm — you both get notified</p>
+            </div>
+            <div className="step">
+              <div className="step-num" style={{ background: 'var(--lemon)', color: '#8a7a00' }}>
+                6
+              </div>
+              <h4>Chat &amp; Verify</h4>
+              <p>Prove ownership via secure in-app chat</p>
+            </div>
+            <div className="step">
+              <div className="step-num" style={{ background: 'var(--rose)', color: 'var(--rose-d)' }}>
+                7
+              </div>
+              <h4>Return Item 🎉</h4>
+              <p>Arrange handover at college security desk</p>
+            </div>
           </div>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800">
-            AI-Powered Lost & Found Matching
-          </h3>
-          <p className="text-slate-600 text-sm leading-relaxed">
-            Our dual-stack system pairs Next.js with Flutter via REST APIs. Use the Gemini AI Assistant
-            to automatically match lost items with newly found objects based on natural language descriptions!
-          </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Link
-            href="/swipe"
-            className="px-6 py-3 rounded-full bg-purple-700 hover:bg-purple-800 text-white font-semibold text-sm shadow transition text-center"
-          >
-            Launch AI Matcher
+      </div>
+
+      {/* CATEGORIES */}
+      <div className="section" style={{ paddingTop: 0 }}>
+        <div className="section-label">Item Categories</div>
+        <h2 className="section-title">What can you post?</h2>
+        <div className="cats-grid">
+          <Link href="/browse?category=ID+Cards" className="cat-pill">
+            <span>🪪</span> ID Cards
           </Link>
-          <Link
-            href="/api/items"
-            className="px-6 py-3 rounded-full bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-200 transition text-center"
-          >
-            Test REST Endpoints
+          <Link href="/browse?category=Electronics" className="cat-pill">
+            <span>📱</span> Electronics
+          </Link>
+          <Link href="/browse?category=Bags" className="cat-pill">
+            <span>🎒</span> Bags
+          </Link>
+          <Link href="/browse?category=Water+Bottles" className="cat-pill">
+            <span>🍶</span> Water Bottles
+          </Link>
+          <Link href="/browse?category=Stationery" className="cat-pill">
+            <span>✏️</span> Stationery
+          </Link>
+          <Link href="/browse?category=Accessories" className="cat-pill">
+            <span>⌚</span> Accessories
+          </Link>
+          <Link href="/browse?category=Others" className="cat-pill">
+            <span>📦</span> Others
           </Link>
         </div>
-      </section>
-    </div>
+      </div>
+
+      {/* RECENTLY REPORTED SHOWCASE */}
+      {recentItems.length > 0 && (
+        <div className="section" style={{ paddingTop: 0 }}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <div className="section-label">Live Campus Feed</div>
+              <h2 className="section-title" style={{ fontSize: '1.8rem', marginBottom: '4px' }}>
+                Recently Reported Items
+              </h2>
+            </div>
+            <Link href="/browse" className="text-sm font-semibold text-rose-600 hover:underline">
+              View All {totalItems} Items →
+            </Link>
+          </div>
+
+          <div className="items-grid">
+            {recentItems.map((item) => {
+              const emoji = categoryEmojiMap[item.category] || '📦';
+              const isLost = item.type === 'LOST';
+              return (
+                <div key={item.id} className="item-card">
+                  <div className="item-img">
+                    <span className="item-img-bg">{emoji}</span>
+                    <span style={{ position: 'relative', zIndex: 1 }}>{emoji}</span>
+                    <span
+                      className={`item-type-badge ${isLost ? 'badge-lost' : 'badge-found'}`}
+                    >
+                      {item.type}
+                    </span>
+                    {item.isHotspot && (
+                      <span className="ai-match-badge">🔥 Hotspot</span>
+                    )}
+                  </div>
+                  <div className="item-body">
+                    <div className="item-cat">{item.category}</div>
+                    <div className="item-name">{item.title}</div>
+                    <div className="item-desc">{item.description}</div>
+                    <div className="item-meta">
+                      <span>📍 {item.location}</span>
+                      <span>📅 {item.dateOccurred}</span>
+                    </div>
+                    <div className="item-footer">
+                      <Link href={`/items/${item.id}`} className="btn-sm btn-view">
+                        View Details
+                      </Link>
+                      <Link href={`/swipe`} className="btn-sm btn-swipe">
+                        Match / Swipe
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

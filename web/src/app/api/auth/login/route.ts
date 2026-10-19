@@ -16,13 +16,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up by either SAP ID or College Email
+    // Look up by either SAP ID or College Email (with alias normalization for @djsce.edu and @djsce.edu.in)
+    const idLower = identifier.toLowerCase();
+    const candidateEmails = [idLower];
+    if (idLower.endsWith('@djsce.edu.in')) {
+      candidateEmails.push(idLower.replace('@djsce.edu.in', '@djsce.edu'));
+    } else if (idLower.endsWith('@djsce.edu')) {
+      candidateEmails.push(idLower.replace('@djsce.edu', '@djsce.edu.in'));
+    }
+    if (idLower === 'admin' || idLower === 'admin-001') {
+      candidateEmails.push('admin@djsce.edu', 'admin@djsce.edu.in');
+    }
+
     const user = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: identifier.toLowerCase() },
-          { sapId: identifier },
-          { collegeId: identifier },
+          { email: { in: candidateEmails } },
+          { sapId: { in: [identifier, identifier.toUpperCase(), idLower] } },
+          { collegeId: { in: [identifier, identifier.toUpperCase()] } },
         ],
       },
     });

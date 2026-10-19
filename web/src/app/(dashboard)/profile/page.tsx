@@ -23,149 +23,286 @@ export default async function ProfilePage() {
     }),
   ]);
 
+  const points = user.points ?? 120;
+
   return (
-    <div className="max-w-5xl mx-auto flex flex-col gap-8">
-      {/* Profile Header */}
-      <div className="glass-card p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6 border border-pink-200">
-        <div className="w-20 h-20 rounded-full bg-pink-100 border-2 border-pink-300 flex items-center justify-center text-4xl shadow-inner shrink-0">
-          {user.avatar || '🎓'}
-        </div>
-
-        <div className="flex-1 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
-            <h1 className="text-2xl font-black text-slate-800">{user.name}</h1>
-            <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 w-fit mx-auto sm:mx-0">
-              {user.role}
-            </span>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '24px 20px 80px' }}>
+      {/* HERO (from profile.html) */}
+      <div className="profile-hero">
+        <div className="profile-avatar">{user.avatar || '😊'}</div>
+        <div className="profile-info">
+          <h1 className="profile-name">{user.name}</h1>
+          <div className="profile-sap">
+            SAP ID: {user.sapId || '60004210045'} &nbsp;·&nbsp; {user.email}
           </div>
-
-          <p className="text-xs text-slate-500 mb-4">{user.email}</p>
-
-          <div className="flex flex-wrap justify-center sm:justify-start gap-3 text-xs text-slate-600">
-            <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-pink-100">
-              <span className="font-semibold text-slate-400">SVKM SAP ID:</span>{' '}
-              <span className="font-bold font-mono">{user.sapId || user.collegeId || '60004210045'}</span>
-            </div>
-            <div className="bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 text-amber-800">
-              <span className="font-semibold">🏆 Points Balance:</span>{' '}
-              <span className="font-bold">{user.points ?? 50} pts</span>
-            </div>
-            <div className="bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-200 text-purple-800">
-              <span className="font-semibold">🎖️ Tier:</span>{' '}
-              <span className="font-bold">{user.badge || 'Campus Helper'}</span>
-            </div>
-            <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-pink-100">
-              <span className="font-semibold text-slate-400">Department:</span>{' '}
-              <span className="font-bold">{user.department || 'Information Technology'}</span>
-            </div>
+          <div className="profile-badges">
+            <span className="badge badge-verified">✓ Verified SVKM Student</span>
+            <span className="badge badge-dept">📘 {user.department || 'Information Technology'}</span>
+            <span className="badge badge-year">🎓 Class of 2026</span>
           </div>
         </div>
-
-        <Link
-          href="/post"
-          className="px-5 py-2.5 rounded-full bg-[#e8848f] hover:bg-[#d86f7b] text-white text-xs font-bold shadow transition shrink-0"
-        >
-          ➕ Report Another Item
-        </Link>
+        <div style={{ textAlign: 'center', flexShrink: 0 }}>
+          <div className="points-circle">
+            <span className="points-num">{points}</span>
+            <span className="points-label">Points</span>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-s)', fontWeight: 600 }}>
+            🏅 Rank #12 on campus
+          </div>
+        </div>
       </div>
 
-      {/* Grid of User Items and Claims */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Items Posted By User */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800">
-              Items You Reported ({userItems.length})
-            </h2>
-          </div>
-
-          {userItems.length === 0 ? (
-            <div className="glass-card p-6 text-center text-xs text-slate-500">
-              You haven&apos;t reported any lost or found items yet.
+      {/* CONTENT GRID */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+        {/* LEFT COLUMN */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* MY POSTED ITEMS */}
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.85)',
+              backdropFilter: 'blur(10px)',
+              border: '1.5px solid rgba(255,255,255,0.95)',
+              borderRadius: '20px',
+              padding: '24px',
+              boxShadow: '0 6px 24px rgba(140,100,130,0.08)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>📋</span> My Reported Items ({userItems.length})
+              </h3>
+              <Link href="/post" className="post-btn" style={{ padding: '6px 14px', fontSize: '0.78rem' }}>
+                + Post Item
+              </Link>
             </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {userItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/items/${item.id}`}
-                  className="glass-card p-4 flex items-center justify-between hover:bg-white transition"
-                >
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          item.type === 'LOST' ? 'badge-lost' : 'badge-found'
-                        }`}
-                      >
-                        {item.type}
-                      </span>
-                      <span className="font-bold text-slate-800 text-xs">{item.title}</span>
-                    </div>
-                    <span className="text-[11px] text-slate-400">
-                      📍 {item.location} • 📅 {item.dateOccurred}
-                    </span>
-                  </div>
 
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                      item.status === 'RESOLVED'
-                        ? 'badge-resolved'
-                        : item.status === 'CLAIMED'
-                        ? 'badge-claimed'
-                        : 'bg-emerald-50 text-emerald-700'
-                    }`}
+            {userItems.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-s)', padding: '16px 0', textAlign: 'center' }}>
+                You haven&apos;t reported any items yet.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {userItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/items/${item.id}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 14px',
+                      borderRadius: '12px',
+                      background: 'rgba(0,0,0,0.02)',
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      transition: 'all 0.15s',
+                    }}
                   >
-                    {item.status}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Claims Filed By User */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800">
-              Your Claims & Verification ({userClaims.length})
-            </h2>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{item.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-s)', marginTop: '2px' }}>
+                        📍 {item.location} &nbsp;•&nbsp; 📅 {item.dateOccurred}
+                      </div>
+                    </div>
+                    <span
+                      className={`item-type-badge ${
+                        item.type === 'LOST' ? 'badge-lost' : 'badge-found'
+                      }`}
+                      style={{ position: 'static' }}
+                    >
+                      {item.type}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
-          {userClaims.length === 0 ? (
-            <div className="glass-card p-6 text-center text-xs text-slate-500">
-              No claims submitted. Browse items to claim your lost belongings!
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {userClaims.map((claim) => (
-                <div key={claim.id} className="glass-card p-4 flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-800">
-                      Claim for: {claim.item.title}
-                    </span>
+          {/* MY CLAIMS */}
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.85)',
+              backdropFilter: 'blur(10px)',
+              border: '1.5px solid rgba(255,255,255,0.95)',
+              borderRadius: '20px',
+              padding: '24px',
+              boxShadow: '0 6px 24px rgba(140,100,130,0.08)',
+            }}
+          >
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>🔍</span> My Claims &amp; Verifications ({userClaims.length})
+            </h3>
+
+            {userClaims.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-s)', padding: '16px 0', textAlign: 'center' }}>
+                No active claims submitted. Browse items to claim your belongings.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {userClaims.map((claim) => (
+                  <div
+                    key={claim.id}
+                    style={{
+                      padding: '12px 14px',
+                      borderRadius: '12px',
+                      background: 'rgba(0,0,0,0.02)',
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{claim.item.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-s)', marginTop: '2px' }}>
+                        Proof: {claim.proofDetails}
+                      </div>
+                    </div>
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        claim.status === 'APPROVED'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : claim.status === 'REJECTED'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '50px',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        background:
+                          claim.status === 'APPROVED'
+                            ? 'var(--mint)'
+                            : claim.status === 'REJECTED'
+                            ? 'var(--rose)'
+                            : 'var(--lemon)',
+                        color:
+                          claim.status === 'APPROVED'
+                            ? 'var(--mint-d)'
+                            : claim.status === 'REJECTED'
+                            ? 'var(--rose-d)'
+                            : '#8a7a00',
+                      }}
                     >
                       {claim.status}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 italic bg-white/60 p-2 rounded border border-pink-100/50">
-                    &quot;{claim.proofDetails}&quot;
-                  </p>
-                  <span className="text-[10px] text-slate-400">
-                    Submitted on: {new Date(claim.createdAt).toLocaleDateString()}
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* MINI STATS */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.85)',
+                borderRadius: '14px',
+                padding: '16px',
+                textAlign: 'center',
+                border: '1.5px solid rgba(255,255,255,0.9)',
+              }}
+            >
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700 }}>
+                {userItems.length}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-s)', marginTop: '2px' }}>
+                Items Reported
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.85)',
+                borderRadius: '14px',
+                padding: '16px',
+                textAlign: 'center',
+                border: '1.5px solid rgba(255,255,255,0.9)',
+              }}
+            >
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700 }}>
+                {userClaims.length}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-s)', marginTop: '2px' }}>
+                Claims Filed
+              </div>
+            </div>
+          </div>
+
+          {/* ACHIEVEMENTS */}
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.85)',
+              backdropFilter: 'blur(10px)',
+              border: '1.5px solid rgba(255,255,255,0.95)',
+              borderRadius: '20px',
+              padding: '24px',
+              boxShadow: '0 6px 24px rgba(140,100,130,0.08)',
+            }}
+          >
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>🏆</span> Campus Badges
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: 'white',
+                  border: '1px solid rgba(0,0,0,0.06)',
+                }}
+              >
+                <div style={{ fontSize: '1.5rem' }}>🌟</div>
+                <div>
+                  <strong style={{ fontSize: '0.85rem', display: 'block' }}>First Report</strong>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
+                    Reported missing belongings on FinDora
                   </span>
                 </div>
-              ))}
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: 'white',
+                  border: '1px solid rgba(0,0,0,0.06)',
+                }}
+              >
+                <div style={{ fontSize: '1.5rem' }}>🤝</div>
+                <div>
+                  <strong style={{ fontSize: '0.85rem', display: 'block' }}>Campus Samaritan</strong>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
+                    Helped classmate reunite with lost item
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: 'white',
+                  border: '1px solid rgba(0,0,0,0.06)',
+                }}
+              >
+                <div style={{ fontSize: '1.5rem' }}>🤖</div>
+                <div>
+                  <strong style={{ fontSize: '0.85rem', display: 'block' }}>AI Match Pioneer</strong>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
+                    Used Gemini AI Swiper for automated match
+                  </span>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
