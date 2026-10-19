@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# Flutter & Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+android/.gradle
+ios/.symlinks
+
+# Local environment & database
+*.local
+.env*.local
+dev.db-journal
+
+# OS generated files
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store

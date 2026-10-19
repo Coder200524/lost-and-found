@@ -1,0 +1,67 @@
+// Prisma schema for FinDora - DJSCE Lost & Found Platform
+// Covers FST Unit 4: Relational Database Engineering with Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    @default("USER") // ADMIN, USER, GUEST
+  avatar       String?   @default("👤")
+  phone        String?
+  department   String?   @default("Information Technology")
+  collegeId    String?   @default("DJSCE-2024")
+  createdAt    DateTime  @default(now())
+
+  items        Item[]
+  claims       Claim[]
+}
+
+model Item {
+  id           String    @id @default(cuid())
+  title        String
+  description  String
+  category     String    // Electronics, ID & Cards, Books & Stationery, Clothing, Accessories, Keys, Other
+  type         String    // LOST or FOUND
+  location     String    // e.g., Library 3rd Floor, Canteen, Room 402, Lab 3
+  dateOccurred String    // YYYY-MM-DD
+  status       String    @default("OPEN") // OPEN, CLAIMED, RESOLVED, CLOSED
+  imageUrl     String?   @default("")
+  reward       String?   @default("")
+  contactName  String
+  contactEmail String
+  contactPhone String?
+  
+  userId       String?
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  claims       Claim[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Claim {
+  id            String    @id @default(cuid())
+  itemId        String
+  item          Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  claimantId    String?
+  claimant      User?     @relation(fields: [claimantId], references: [id], onDelete: SetNull)
+  
+  claimantName  String
+  claimantEmail String
+  proofDetails  String
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+
+  createdAt     DateTime  @default(now())
+}

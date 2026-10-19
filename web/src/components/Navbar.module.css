@@ -1,0 +1,31 @@
+/* CSS Module for Navbar Component (FST Unit 2: Component-level isolated styling) */
+.navContainer {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  background: rgba(255, 252, 253, 0.88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(249, 200, 207, 0.35);
+}
+
+.logoText {
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: #e8848f;
+  letter-spacing: -0.02em;
+}
+
+.navBadge {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: #fdf3c0;
+  color: #8b6e00;
+  font-weight: 600;
+}

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse Items — FinDora</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose:#f9c8cf;--mint:#c4ead9;--sky:#c5dff8;--lemon:#fdf3c0;--lavender:#ddd6f3;--peach:#ffd9b7;
+    --rose-d:#e8848f;--mint-d:#5bbf8e;--sky-d:#5b9fd4;--lav-d:#9b8bdb;
+    --text:#3a3040;--text-s:#7a6e80;--white:#fffcfd;
+    --radius:18px;--shadow:0 8px 32px rgba(140,100,130,0.10);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#fef4f7 0%,#f0f8ff 40%,#f4f0ff 100%);color:var(--text);min-height:100vh}
+
+  nav{
+    position:sticky;top:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 40px;
+    background:rgba(255,252,253,0.88);backdrop-filter:blur(16px);
+    border-bottom:1px solid rgba(249,200,207,0.3);
+  }
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--rose-d);text-decoration:none;display:flex;align-items:center;gap:8px}
+  .nav-links{display:flex;gap:8px;align-items:center}
+  .nav-links a{text-decoration:none;color:var(--text-s);font-size:0.88rem;font-weight:500;padding:8px 14px;border-radius:50px;transition:all 0.2s}
+  .nav-links a:hover,.nav-links a.active{background:var(--rose);color:var(--rose-d)}
+  .nav-cta{background:var(--rose-d)!important;color:white!important;padding:10px 20px!important;border-radius:50px!important}
+  .nav-cta:hover{background:#d0606c!important}
+  .nav-user{display:flex;align-items:center;gap:8px;font-size:0.88rem;font-weight:500;color:var(--text)}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:0.9rem}
+
+  .layout{display:flex;min-height:calc(100vh - 66px)}
+
+  /* SIDEBAR */
+  .sidebar{
+    width:280px;min-width:280px;
+    padding:28px 24px;
+    border-right:1px solid rgba(249,200,207,0.25);
+    background:rgba(255,252,253,0.6);
+    position:sticky;top:66px;height:calc(100vh - 66px);overflow-y:auto;
+  }
+  .filter-title{font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-s);margin-bottom:14px}
+  .filter-section{margin-bottom:28px}
+
+  .search-wrap{position:relative;margin-bottom:28px}
+  .search-wrap input{
+    width:100%;padding:12px 16px 12px 40px;
+    background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:12px;
+    font-size:0.9rem;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;
+    transition:border-color 0.2s;
+  }
+  .search-wrap input:focus{border-color:var(--rose-d)}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:1rem}
+
+  .cat-filter{display:flex;flex-direction:column;gap:6px}
+  .cat-btn{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 14px;border-radius:10px;border:none;background:transparent;
+    cursor:pointer;font-size:0.88rem;font-weight:500;color:var(--text-s);
+    transition:all 0.18s;text-align:left;width:100%;
+  }
+  .cat-btn:hover,.cat-btn.active{background:var(--rose);color:var(--rose-d)}
+  .cat-btn span:first-child{font-size:1.1rem}
+  .cat-count{margin-left:auto;font-size:0.75rem;background:rgba(0,0,0,0.07);padding:2px 8px;border-radius:50px}
+
+  .type-filter{display:flex;gap:6px}
+  .type-btn{
+    flex:1;padding:9px;border-radius:10px;border:1.5px solid rgba(0,0,0,0.08);
+    background:white;cursor:pointer;font-size:0.82rem;font-weight:600;
+    color:var(--text-s);transition:all 0.2s;
+  }
+  .type-btn.lost.active{background:var(--rose);border-color:var(--rose-d);color:var(--rose-d)}
+  .type-btn.found.active{background:var(--mint);border-color:var(--mint-d);color:var(--mint-d)}
+
+  .date-filter input{
+    width:100%;padding:10px 14px;
+    background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:10px;
+    font-size:0.88rem;font-family:'DM Sans',sans-serif;margin-bottom:6px;
+    outline:none;color:var(--text);
+  }
+
+  .loc-options{display:flex;flex-direction:column;gap:5px}
+  .loc-btn{
+    padding:8px 14px;border-radius:8px;border:none;background:transparent;
+    cursor:pointer;font-size:0.85rem;color:var(--text-s);text-align:left;
+    transition:all 0.15s;
+  }
+  .loc-btn:hover,.loc-btn.active{background:var(--sky);color:var(--sky-d)}
+
+  .clear-btn{
+    width:100%;padding:10px;border-radius:10px;
+    background:none;border:1.5px solid rgba(0,0,0,0.1);
+    font-size:0.85rem;font-weight:500;color:var(--text-s);cursor:pointer;
+    transition:all 0.2s;
+  }
+  .clear-btn:hover{background:var(--rose);border-color:var(--rose-d);color:var(--rose-d)}
+
+  /* MAIN */
+  .main{flex:1;padding:28px 32px}
+  .main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:gap}
+  .main-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700}
+  .main-actions{display:flex;gap:10px;align-items:center}
+  .sort-select{
+    padding:9px 14px;border-radius:10px;border:1.5px solid rgba(0,0,0,0.08);
+    background:white;font-size:0.85rem;font-family:'DM Sans',sans-serif;
+    color:var(--text);cursor:pointer;outline:none;
+  }
+  .post-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--rose-d);color:white;
+    padding:10px 20px;border-radius:10px;border:none;cursor:pointer;
+    font-size:0.88rem;font-weight:600;text-decoration:none;
+    transition:all 0.2s;
+  }
+  .post-btn:hover{background:#d0606c;transform:translateY(-1px)}
+
+  /* TABS */
+  .view-tabs{display:flex;gap:0;background:rgba(0,0,0,0.05);border-radius:12px;padding:4px;margin-bottom:24px;width:fit-content}
+  .view-tab{padding:8px 20px;border-radius:9px;border:none;background:none;cursor:pointer;font-size:0.85rem;font-weight:500;color:var(--text-s);transition:all 0.2s}
+  .view-tab.active{background:white;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+
+  /* AI MATCH BANNER */
+  .ai-banner{
+    background:linear-gradient(135deg,var(--lavender),var(--sky));
+    border-radius:14px;padding:16px 20px;
+    display:flex;align-items:center;gap:14px;
+    margin-bottom:24px;cursor:pointer;
+    border:1.5px solid rgba(155,139,219,0.3);
+    transition:transform 0.2s;
+  }
+  .ai-banner:hover{transform:translateY(-2px)}
+  .ai-icon{font-size:1.8rem}
+  .ai-text h4{font-size:0.95rem;font-weight:600;margin-bottom:2px}
+  .ai-text p{font-size:0.82rem;color:var(--text-s)}
+  .ai-arrow{margin-left:auto;font-size:1.2rem;color:var(--lav-d)}
+
+  /* GRID */
+  .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+  .item-card{
+    background:rgba(255,255,255,0.85);backdrop-filter:blur(10px);
+    border:1.5px solid rgba(255,255,255,0.9);border-radius:var(--radius);
+    overflow:hidden;box-shadow:var(--shadow);
+    transition:transform 0.25s,box-shadow 0.25s;cursor:pointer;
+  }
+  .item-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(140,100,130,0.15)}
+  .item-img{
+    height:180px;background:var(--lemon);
+    display:flex;align-items:center;justify-content:center;
+    font-size:3rem;position:relative;overflow:hidden;
+  }
+  .item-img-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:5rem;opacity:0.15}
+  .item-type-badge{
+    position:absolute;top:12px;left:12px;
+    padding:4px 12px;border-radius:50px;
+    font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;
+  }
+  .badge-lost{background:var(--rose);color:var(--rose-d)}
+  .badge-found{background:var(--mint);color:var(--mint-d)}
+  .ai-match-badge{
+    position:absolute;top:12px;right:12px;
+    background:var(--lavender);color:var(--lav-d);
+    padding:4px 10px;border-radius:50px;font-size:0.72rem;font-weight:600;
+  }
+  .item-body{padding:18px}
+  .item-cat{font-size:0.75rem;font-weight:600;color:var(--text-s);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
+  .item-name{font-size:1.05rem;font-weight:600;margin-bottom:8px}
+  .item-desc{font-size:0.84rem;color:var(--text-s);line-height:1.5;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .item-meta{display:flex;gap:12px;font-size:0.78rem;color:var(--text-s);margin-bottom:14px}
+  .item-meta span{display:flex;align-items:center;gap:4px}
+  .item-footer{display:flex;gap:8px}
+  .btn-sm{
+    flex:1;padding:9px;border-radius:9px;border:none;cursor:pointer;
+    font-size:0.82rem;font-weight:600;transition:all 0.2s;
+  }
+  .btn-view{background:rgba(0,0,0,0.05);color:var(--text)}
+  .btn-view:hover{background:var(--lavender);color:var(--lav-d)}
+  .btn-swipe{background:var(--rose);color:var(--rose-d)}
+  .btn-swipe:hover{background:var(--rose-d);color:white}
+
+  /* HOTSPOT */
+  .hotspot-bar{
+    display:flex;align-items:center;gap:12px;padding:14px 18px;
+    background:linear-gradient(90deg,rgba(255,217,183,0.6),rgba(253,243,192,0.6));
+    border-radius:12px;margin-bottom:20px;
+    border:1px solid rgba(240,216,112,0.4);font-size:0.85rem;
+  }
+
+  /* EMPTY */
+  .empty{text-align:center;padding:64px 24px;color:var(--text-s)}
+  .empty .emoji{font-size:3rem;margin-bottom:12px}
+
+  /* PAGINATION */
+  .pagination{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:32px}
+  .page-btn{
+    width:36px;height:36px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.08);
+    background:white;cursor:pointer;font-size:0.88rem;font-weight:500;
+    display:flex;align-items:center;justify-content:center;transition:all 0.2s;
+  }
+  .page-btn:hover,.page-btn.active{background:var(--rose-d);color:white;border-color:var(--rose-d)}
+
+  @media(max-width:900px){.sidebar{display:none}.main{padding:20px}}
+  @media(max-width:600px){.items-grid{grid-template-columns:1fr}.nav-links a:not(.nav-cta){display:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">🔍 FinDora</a>
+  <div class="nav-links">
+    <a href="browse.html" class="active">Browse</a>
+    <a href="post.html">Post Item</a>
+    <a href="swipe.html">Swipe</a>
+    <a href="chat.html">Chat</a>
+    <div class="nav-user">
+      <div class="avatar">👤</div>
+      <span>60004220042</span>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="search-wrap">
+      <span class="search-icon">🔎</span>
+      <input type="text" placeholder="Search items…" oninput="filterItems(this.value)">
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Type</div>
+      <div class="type-filter">
+        <button class="type-btn lost active" onclick="setType(this,'lost')">🔴 Lost</button>
+        <button class="type-btn found" onclick="setType(this,'found')">🟢 Found</button>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Category</div>
+      <div class="cat-filter">
+        <button class="cat-btn active" onclick="setCategory(this,'all')"><span>🗂️</span> All Categories <span class="cat-count">48</span></button>
+        <button class="cat-btn" onclick="setCategory(this,'id')"><span>🪪</span> ID Cards <span class="cat-count">12</span></button>
+        <button class="cat-btn" onclick="setCategory(this,'electronics')"><span>📱</span> Electronics <span class="cat-count">9</span></button>
+        <button class="cat-btn" onclick="setCategory(this,'bags')"><span>🎒</span> Bags <span class="cat-count">8</span></button>
+        <button class="cat-btn" onclick="setCategory(this,'bottles')"><span>🍶</span> Water Bottles <span class="cat-count">7</span></button>
+        <button class="cat-btn" onclick="setCategory(this,'stationery')"><span>✏️</span> Stationery <span class="cat-count">6</span></button>
+        <button class="cat-btn" onclick="setCategory(this,'accessories')"><span>⌚</span> Accessories <span class="cat-count">4</span></button>
+        <button class="cat-btn" onclick="setCategory(this,'others')"><span>📦</span> Others <span class="cat-count">2</span></button>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Date Range</div>
+      <input type="date" style="width:100%;padding:10px 14px;background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:10px;font-size:0.88rem;margin-bottom:6px;outline:none">
+      <input type="date" style="width:100%;padding:10px 14px;background:white;border:1.5px solid rgba(0,0,0,0.08);border-radius:10px;font-size:0.88rem;outline:none">
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">Location</div>
+      <div class="loc-options">
+        <button class="loc-btn active" onclick="setLoc(this)">📍 All Locations</button>
+        <button class="loc-btn" onclick="setLoc(this)">🍽️ Canteen</button>
+        <button class="loc-btn" onclick="setLoc(this)">📚 Library</button>
+        <button class="loc-btn" onclick="setLoc(this)">🏫 Classroom Block</button>
+        <button class="loc-btn" onclick="setLoc(this)">🅿️ Parking Area</button>
+        <button class="loc-btn" onclick="setLoc(this)">🏃 Sports Ground</button>
+        <button class="loc-btn" onclick="setLoc(this)">💻 Computer Lab</button>
+      </div>
+    </div>
+
+    <button class="clear-btn">✕ Clear All Filters</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <h1 class="main-title">Browse Items</h1>
+        <p style="font-size:0.88rem;color:var(--text-s);margin-top:4px">48 items posted this week</p>
+      </div>
+      <div class="main-actions">
+        <select class="sort-select">
+          <option>Latest first</option>
+          <option>Oldest first</option>
+          <option>Best match</option>
+          <option>Location: nearest</option>
+        </select>
+        <a href="post.html" class="post-btn">+ Post Item</a>
+      </div>
+    </div>
+
+    <div class="view-tabs">
+      <button class="view-tab active">Grid View</button>
+      <button class="view-tab" onclick="window.location.href='swipe.html'">Swipe View 👆</button>
+    </div>
+
+    <!-- AI BANNER -->
+    <div class="ai-banner" onclick="window.location.href='swipe.html'">
+      <div class="ai-icon">🤖</div>
+      <div class="ai-text">
+        <h4>AI found 3 possible matches for your lost Blue Backpack!</h4>
+        <p>Tap to review your AI-suggested matches and swipe to confirm</p>
+      </div>
+      <div class="ai-arrow">→</div>
+    </div>
+
+    <!-- HOTSPOT -->
+    <div class="hotspot-bar">
+      🔥 <strong>Hotspot Alert:</strong> Canteen and Library are today's most-reported loss zones. Be careful!
+    </div>
+
+    <!-- GRID -->
+    <div class="items-grid" id="itemsGrid">
+      <!-- Generated by JS -->
+    </div>
+
+    <div class="pagination">
+      <button class="page-btn">←</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn">→</button>
+    </div>
+  </main>
+</div>
+
+<script>
+const items = [
+  {type:'lost',cat:'ID Cards',icon:'🪪',bg:'#fde8ea',name:'SVKM Student ID Card',desc:'Blue ID card with SAP ID 6000422..., lost near the library entrance.',loc:'Library',date:'Apr 8',match:'95% AI Match'},
+  {type:'found',cat:'Electronics',icon:'📱',bg:'#e8f5e9',name:'Black Samsung Earbuds Case',desc:'Found near the canteen area. Small black charging case with earbuds inside.',loc:'Canteen',date:'Apr 9',match:null},
+  {type:'lost',cat:'Bags',icon:'🎒',bg:'#fff9e0',name:'Blue JanSport Backpack',desc:'Medium-sized blue backpack with a yellow keychain. Has engineering notes inside.',loc:'Classroom 302',date:'Apr 7',match:'87% AI Match'},
+  {type:'found',cat:'Water Bottles',icon:'🍶',bg:'#e0f4ff',name:'Milton Steel Bottle (Green)',desc:'Green 1L Milton steel water bottle found on 3rd floor corridor near washroom.',loc:'3rd Floor',date:'Apr 9',match:null},
+  {type:'lost',cat:'Accessories',icon:'⌚',bg:'#ede8ff',name:'Titan Wristwatch (Silver)',desc:'Silver dial Titan watch with black leather strap. Has a small scratch on the glass.',loc:'Canteen',date:'Apr 6',match:null},
+  {type:'found',cat:'Stationery',icon:'✏️',bg:'#fff0e0',name:'Geometry Box (Camlin)',desc:'Camlin geometry box with a broken compass. Found in Classroom 204.',loc:'Classroom 204',date:'Apr 10',match:'70% AI Match'},
+  {type:'lost',cat:'Electronics',icon:'💻',bg:'#fde8ea',name:'Boat Rockerz Headphones',desc:'Black wireless headphones in a hard grey case. Lost possibly in computer lab or library.',loc:'Computer Lab',date:'Apr 5',match:null},
+  {type:'found',cat:'ID Cards',icon:'🪪',bg:'#e8f5e9',name:'SVKM Library Card',desc:'White library card found near parking area. Name visible but partially hidden.',loc:'Parking',date:'Apr 9',match:null},
+];
+
+function renderItems(data) {
+  const grid = document.getElementById('itemsGrid');
+  grid.innerHTML = data.map(item => `
+    <div class="item-card" onclick="window.location.href='post.html'">
+      <div class="item-img" style="background:${item.bg}">
+        <div class="item-img-bg">${item.icon}</div>
+        <div class="item-type-badge badge-${item.type}">${item.type === 'lost' ? '🔴 Lost' : '🟢 Found'}</div>
+        ${item.match ? `<div class="ai-match-badge">🤖 ${item.match}</div>` : ''}
+        <span style="font-size:2.5rem;position:relative;z-index:1">${item.icon}</span>
+      </div>
+      <div class="item-body">
+        <div class="item-cat">${item.cat}</div>
+        <div class="item-name">${item.name}</div>
+        <div class="item-desc">${item.desc}</div>
+        <div class="item-meta">
+          <span>📍 ${item.loc}</span>
+          <span>🗓️ ${item.date}</span>
+        </div>
+        <div class="item-footer">
+          <button class="btn-sm btn-view">View Details</button>
+          <button class="btn-sm btn-swipe" onclick="event.stopPropagation();window.location.href='swipe.html'">👆 Swipe</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+renderItems(items);
+
+function setCategory(el, cat) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+function setType(el, type) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+function setLoc(el) {
+  document.querySelectorAll('.loc-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+function filterItems(q) {
+  const filtered = q ? items.filter(i => i.name.toLowerCase().includes(q.toLowerCase()) || i.desc.toLowerCase().includes(q.toLowerCase())) : items;
+  renderItems(filtered);
+}
+</script>
+</body>
+</html>

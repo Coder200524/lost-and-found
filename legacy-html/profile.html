@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile — FinDora</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose:#f9c8cf;--mint:#c4ead9;--sky:#c5dff8;--lemon:#fdf3c0;--lavender:#ddd6f3;--peach:#ffd9b7;
+    --rose-d:#e8848f;--mint-d:#5bbf8e;--sky-d:#5b9fd4;--lav-d:#9b8bdb;
+    --text:#3a3040;--text-s:#7a6e80;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#fef4f7 0%,#f0f8ff 40%,#f4f0ff 100%);color:var(--text);min-height:100vh}
+
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:rgba(255,252,253,0.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(249,200,207,0.3)}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--rose-d);text-decoration:none;display:flex;align-items:center;gap:8px}
+  .nav-links{display:flex;gap:8px;align-items:center}
+  .nav-links a{text-decoration:none;color:var(--text-s);font-size:0.88rem;font-weight:500;padding:8px 14px;border-radius:50px;transition:all 0.2s}
+  .nav-links a:hover{background:var(--rose);color:var(--rose-d)}
+
+  .page{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+
+  /* HERO PROFILE */
+  .profile-hero{
+    background:linear-gradient(135deg,rgba(249,200,207,0.5),rgba(221,214,243,0.5));
+    border-radius:24px;padding:36px;margin-bottom:24px;
+    display:flex;align-items:center;gap:28px;flex-wrap:wrap;
+    border:1.5px solid rgba(255,255,255,0.8);
+    box-shadow:0 8px 32px rgba(140,100,130,0.10);
+  }
+  .profile-avatar{
+    width:100px;height:100px;border-radius:50%;
+    background:linear-gradient(135deg,var(--rose),var(--lavender));
+    display:flex;align-items:center;justify-content:center;
+    font-size:2.8rem;flex-shrink:0;
+    border:4px solid white;box-shadow:0 6px 20px rgba(232,132,143,0.3);
+  }
+  .profile-info{flex:1}
+  .profile-name{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;margin-bottom:4px}
+  .profile-sap{font-size:0.85rem;color:var(--text-s);margin-bottom:8px;font-family:monospace}
+  .profile-badges{display:flex;gap:8px;flex-wrap:wrap}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:50px;font-size:0.78rem;font-weight:600}
+  .badge-verified{background:var(--mint);color:var(--mint-d)}
+  .badge-dept{background:var(--sky);color:var(--sky-d)}
+  .badge-year{background:var(--lavender);color:var(--lav-d)}
+
+  .profile-right{text-align:center;flex-shrink:0}
+  .points-circle{
+    width:110px;height:110px;border-radius:50%;
+    background:linear-gradient(135deg,var(--lemon),#fce97a);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border:4px solid white;box-shadow:0 4px 20px rgba(240,200,0,0.25);
+    margin:0 auto 8px;
+  }
+  .points-num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#8a6a00;line-height:1}
+  .points-label{font-size:0.65rem;font-weight:700;color:#8a6a00;text-transform:uppercase;letter-spacing:0.06em}
+  .points-rank{font-size:0.78rem;color:var(--text-s);font-weight:500}
+
+  /* GRID */
+  .content-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+
+  .card{background:rgba(255,255,255,0.85);backdrop-filter:blur(10px);border:1.5px solid rgba(255,255,255,0.95);border-radius:20px;padding:24px;box-shadow:0 6px 24px rgba(140,100,130,0.08);margin-bottom:20px}
+  .card-title{font-size:0.9rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .card-title span{font-size:1.1rem}
+
+  /* ACTIVITY */
+  .activity-list{display:flex;flex-direction:column;gap:10px}
+  .activity-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.05)}
+  .activity-item:last-child{border:none;padding-bottom:0}
+  .act-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+  .act-info{flex:1}
+  .act-name{font-size:0.88rem;font-weight:600}
+  .act-sub{font-size:0.76rem;color:var(--text-s);margin-top:2px}
+  .act-status{font-size:0.75rem;font-weight:600;padding:3px 10px;border-radius:50px}
+  .act-time{font-size:0.72rem;color:var(--text-s)}
+
+  /* STATS */
+  .mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+  .mini-stat{background:rgba(255,255,255,0.85);border-radius:14px;padding:16px;text-align:center;border:1.5px solid rgba(255,255,255,0.9)}
+  .mini-stat .val{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700}
+  .mini-stat .lbl{font-size:0.72rem;color:var(--text-s);margin-top:2px}
+
+  /* ACHIEVEMENTS */
+  .achievements{display:flex;flex-direction:column;gap:10px}
+  .ach{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.7);border:1.5px solid rgba(255,255,255,0.9)}
+  .ach-icon{font-size:1.6rem;flex-shrink:0}
+  .ach-info strong{font-size:0.85rem;display:block}
+  .ach-info span{font-size:0.75rem;color:var(--text-s)}
+  .ach.locked{opacity:0.4;filter:grayscale(1)}
+
+  /* POINTS BREAKDOWN */
+  .points-list{display:flex;flex-direction:column;gap:8px}
+  .points-row{display:flex;align-items:center;justify-content:space-between;font-size:0.85rem;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.05)}
+  .points-row:last-child{border:none}
+  .pts-amt{font-weight:700;color:var(--mint-d)}
+  .pts-neg{color:var(--rose-d)}
+
+  @media(max-width:700px){.content-grid{grid-template-columns:1fr}.profile-hero{flex-direction:column}.profile-right{width:100%}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">🔍 FinDora</a>
+  <div class="nav-links">
+    <a href="browse.html">Browse</a>
+    <a href="post.html">Post Item</a>
+    <a href="swipe.html">Swipe</a>
+    <a href="chat.html">Chat</a>
+    <a href="profile.html" style="background:var(--rose);color:var(--rose-d)">My Profile</a>
+  </div>
+</nav>
+
+<div class="page">
+  <!-- HERO -->
+  <div class="profile-hero">
+    <div class="profile-avatar">😊</div>
+    <div class="profile-info">
+      <h1 class="profile-name">Riya Mehta</h1>
+      <div class="profile-sap">SAP ID: 60004220042 &nbsp;·&nbsp; riya@svkm.edu.in</div>
+      <div class="profile-badges">
+        <span class="badge badge-verified">✓ Verified Student</span>
+        <span class="badge badge-dept">📘 Information Technology</span>
+        <span class="badge badge-year">🎓 Third Year</span>
+      </div>
+    </div>
+    <div class="profile-right">
+      <div class="points-circle">
+        <span class="points-num">340</span>
+        <span class="points-label">Points</span>
+      </div>
+      <div class="points-rank">🏅 Rank #12 on campus</div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- LEFT -->
+    <div>
+      <!-- MY ITEMS -->
+      <div class="card">
+        <div class="card-title"><span>📋</span> My Posted Items</div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--mint)">🎒</div>
+            <div class="act-info">
+              <div class="act-name">Blue JanSport Backpack</div>
+              <div class="act-sub">Lost · Library Entrance · Apr 7</div>
+            </div>
+            <span class="act-status" style="background:var(--lavender);color:var(--lav-d)">Matching</span>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--lemon)">🪪</div>
+            <div class="act-info">
+              <div class="act-name">SVKM ID Card (Found)</div>
+              <div class="act-sub">Found · Canteen · Mar 28</div>
+            </div>
+            <span class="act-status" style="background:var(--mint);color:var(--mint-d)">Returned ✓</span>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--rose)">⌚</div>
+            <div class="act-info">
+              <div class="act-name">Silver Watch</div>
+              <div class="act-sub">Lost · Sports Ground · Mar 15</div>
+            </div>
+            <span class="act-status" style="background:rgba(0,0,0,0.06);color:var(--text-s)">Closed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT MATCHES -->
+      <div class="card">
+        <div class="card-title"><span>💫</span> Recent Matches</div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--mint)">🎒</div>
+            <div class="act-info">
+              <div class="act-name">Blue Backpack · 87% match</div>
+              <div class="act-sub">Posted by Student #4821 · Found at 3rd Floor Stairs · Apr 9</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              <a href="chat.html" style="font-size:0.78rem;font-weight:600;color:var(--mint-d);text-decoration:none;background:var(--mint);padding:4px 10px;border-radius:8px">💬 Chat</a>
+              <span class="act-time">2 hrs ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--sky)">🎒</div>
+            <div class="act-info">
+              <div class="act-name">Blue Bag with Yellow Keychain · 94% match</div>
+              <div class="act-sub">Posted by Student #2034 · Found at Library · Apr 9</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              <a href="swipe.html" style="font-size:0.78rem;font-weight:600;color:var(--lav-d);text-decoration:none;background:var(--lavender);padding:4px 10px;border-radius:8px">👆 Review</a>
+              <span class="act-time">5 hrs ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      <div class="mini-stats">
+        <div class="mini-stat">
+          <div class="val" style="color:var(--mint-d)">5</div>
+          <div class="lbl">Items Returned</div>
+        </div>
+        <div class="mini-stat">
+          <div class="val" style="color:var(--lav-d)">12</div>
+          <div class="lbl">Total Posts</div>
+        </div>
+        <div class="mini-stat">
+          <div class="val" style="color:var(--sky-d)">8</div>
+          <div class="lbl">Matches Made</div>
+        </div>
+        <div class="mini-stat">
+          <div class="val" style="color:var(--rose-d)">2</div>
+          <div class="lbl">Active Chats</div>
+        </div>
+      </div>
+
+      <!-- ACHIEVEMENTS -->
+      <div class="card">
+        <div class="card-title"><span>🏆</span> Achievements</div>
+        <div class="achievements">
+          <div class="ach">
+            <div class="ach-icon">🌟</div>
+            <div class="ach-info"><strong>First Return</strong><span>Returned your first found item</span></div>
+          </div>
+          <div class="ach">
+            <div class="ach-icon">💎</div>
+            <div class="ach-info"><strong>Helper x5</strong><span>Returned 5 items to owners</span></div>
+          </div>
+          <div class="ach">
+            <div class="ach-icon">⚡</div>
+            <div class="ach-info"><strong>Quick Finder</strong><span>Item matched in under 2 hours</span></div>
+          </div>
+          <div class="ach locked">
+            <div class="ach-icon">🦸</div>
+            <div class="ach-info"><strong>Campus Hero</strong><span>Return 10 items · 5 more to go!</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POINTS -->
+      <div class="card">
+        <div class="card-title"><span>⭐</span> Points History</div>
+        <div class="points-list">
+          <div class="points-row"><span>Returned ID Card</span><span class="pts-amt">+100 pts</span></div>
+          <div class="points-row"><span>Returned Notebook</span><span class="pts-amt">+50 pts</span></div>
+          <div class="points-row"><span>Returned Water Bottle</span><span class="pts-amt">+50 pts</span></div>
+          <div class="points-row"><span>First post bonus</span><span class="pts-amt">+50 pts</span></div>
+          <div class="points-row"><span>Quick match (< 2hrs)</span><span class="pts-amt">+40 pts</span></div>
+          <div class="points-row" style="border-top:2px solid rgba(0,0,0,0.07);padding-top:12px;margin-top:4px"><span><strong>Total</strong></span><strong class="pts-amt">340 pts</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
