@@ -230,14 +230,74 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                     ),
                   ),
 
-                // Specs list
+                // SVKM Mindmap Hotspot & Privacy Indicators
+                if (item.isHotspot || item.isMasked || item.isUrgent)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        if (item.isHotspot)
+                          _buildBadge('🔥 Hotspot Zone (High Loss Area)', const Color(0xFFFFEDD5), const Color(0xFFC2410C)),
+                        if (item.isMasked)
+                          _buildBadge('🆔 Masked Sensitive ID Details', const Color(0xFFEDE9FE), const Color(0xFF6D28D9)),
+                        if (item.isUrgent)
+                          _buildBadge('🚨 Urgent Campus Alert', const Color(0xFFFDE8EA), const Color(0xFFD9485E)),
+                      ],
+                    ),
+                  ),
+
+                // Specs list - Privacy Protected
                 _buildInfoRow(Icons.category_outlined, 'Category', item.category),
                 _buildInfoRow(Icons.location_on_outlined, 'Campus Location', item.location),
                 _buildInfoRow(Icons.calendar_today_outlined, 'Date Occurred', item.dateOccurred),
                 _buildInfoRow(Icons.person_outline, 'Reported By', item.contactName),
-                _buildInfoRow(Icons.email_outlined, 'Email', item.contactEmail),
-                if (item.contactPhone != null && item.contactPhone!.isNotEmpty)
-                  _buildInfoRow(Icons.phone_outlined, 'Phone', item.contactPhone!),
+                _buildInfoRow(Icons.lock_outline, 'Student Contact', '🔒 Hidden for Safety (SVKM Protocol)'),
+
+                const SizedBox(height: 16),
+
+                // Predefined Safety Messages Box
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDE9FE),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFDDD6F3)),
+                  ),
+                  child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('🛡️', style: TextStyle(fontSize: 18)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'SVKM Handover Protocol: Exchange items only at the Ground Floor Security Desk or Central Library reception. Never share OTP or payment info.',
+                          style: TextStyle(fontSize: 11, height: 1.4, color: Color(0xFF5B21B6), fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Report Misuse Button
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('⚠️ Item reported for administrative review.'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.flag_outlined, size: 14, color: Colors.grey),
+                    label: const Text('Report Misuse / Fake Claim', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  ),
+                ),
               ],
             ),
           ),
@@ -266,6 +326,20 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
           const Spacer(),
           Text(val, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748))),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBadge(String label, Color bg, Color text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: text, fontSize: 10, fontWeight: FontWeight.bold),
       ),
     );
   }

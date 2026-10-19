@@ -115,7 +115,26 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 </div>
               )}
 
-              {/* Attributes table */}
+              {/* Hotspot & Privacy Badges (SVKM Mindmap) */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {item.isHotspot && (
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
+                    🔥 Hotspot Zone (High Loss Area)
+                  </span>
+                )}
+                {item.isMasked && (
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                    🆔 Sensitive ID Details Masked for Security
+                  </span>
+                )}
+                {item.isUrgent && (
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-200 animate-pulse">
+                    🚨 Urgent Campus Lost Alert
+                  </span>
+                )}
+              </div>
+
+              {/* Attributes table - Privacy Preserving */}
               <div className="flex flex-col gap-2.5 text-xs text-slate-600 border-t border-b border-pink-100/80 py-4 my-2">
                 <div className="flex justify-between">
                   <span className="font-semibold text-slate-400">Campus Location:</span>
@@ -131,12 +150,23 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                     {item.contactName} ({item.user?.department || 'Student'})
                   </span>
                 </div>
-                {item.contactPhone && (
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-slate-400">Contact Number:</span>
-                    <span className="font-medium text-slate-800">📞 {item.contactPhone}</span>
-                  </div>
-                )}
+                {/* Privacy & Security: Contact hidden from public */}
+                <div className="flex justify-between items-center bg-pink-50/60 p-2 rounded-lg border border-pink-100/60">
+                  <span className="font-semibold text-slate-500">Contact Privacy:</span>
+                  <span className="font-bold text-pink-700 text-[11px]">
+                    🔒 Phone/Email Protected (Hidden from Public)
+                  </span>
+                </div>
+              </div>
+
+              {/* Predefined Safety Rules */}
+              <div className="p-3 bg-purple-50/70 border border-purple-100 rounded-xl text-[11px] text-purple-900 flex flex-col gap-1">
+                <span className="font-bold flex items-center gap-1.5">
+                  <span>🛡️</span> SVKM Handover Safety Protocol:
+                </span>
+                <p className="text-purple-700 leading-relaxed">
+                  Always meet at the Ground Floor Security Desk or Central Library reception. Verify proof of ownership before releasing items.
+                </p>
               </div>
             </div>
 

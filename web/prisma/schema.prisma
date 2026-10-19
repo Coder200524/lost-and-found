@@ -1,5 +1,6 @@
-// Prisma schema for FinDora - DJSCE Lost & Found Platform
+// Prisma schema for FinDora - SVKM DJSCE Lost & Found Platform
 // Covers FST Unit 4: Relational Database Engineering with Prisma ORM
+// Aligned with SVKM Swipe & Find Architectural Mindmap
 
 generator client {
   provider = "prisma-client-js"
@@ -12,6 +13,7 @@ datasource db {
 
 model User {
   id           String    @id @default(cuid())
+  sapId        String?   @unique // SVKM SAP ID Login (e.g., 60004210045)
   name         String
   email        String    @unique
   passwordHash String
@@ -20,23 +22,32 @@ model User {
   phone        String?
   department   String?   @default("Information Technology")
   collegeId    String?   @default("DJSCE-2024")
+  points       Int       @default(50) // Reward / Points System for returning items
+  badge        String    @default("SVKM Scout") // Badge/Tier
   createdAt    DateTime  @default(now())
 
   items        Item[]
   claims       Claim[]
+  sentMessages ChatMessage[] @relation("SentMessages")
 }
 
 model Item {
   id           String    @id @default(cuid())
   title        String
   description  String
-  category     String    // Electronics, ID & Cards, Books & Stationery, Clothing, Accessories, Keys, Other
+  category     String    // ID Cards, Bottles, Stationery, Electronics, Bags, Accessories, Others
   type         String    // LOST or FOUND
-  location     String    // e.g., Library 3rd Floor, Canteen, Room 402, Lab 3
+  location     String    // e.g., Library 3rd Floor, Canteen, Room 402, IT Lab 3
+  isHotspot    Boolean   @default(false) // Hotspot Zones (High Loss Areas)
+  isMasked     Boolean   @default(false) // Mask Sensitive Details (ID numbers blurred)
+  isUrgent     Boolean   @default(false) // Lost Alerts (Notify nearby users)
+  reportsCount Int       @default(0)     // Report Misuse / Fake Claims
   dateOccurred String    // YYYY-MM-DD
   status       String    @default("OPEN") // OPEN, CLAIMED, RESOLVED, CLOSED
   imageUrl     String?   @default("")
   reward       String?   @default("")
+  
+  // Privacy & Security: Contact details hidden from public view
   contactName  String
   contactEmail String
   contactPhone String?
@@ -45,6 +56,7 @@ model Item {
   user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   claims       Claim[]
+  messages     ChatMessage[]
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -62,6 +74,21 @@ model Claim {
   claimantEmail String
   proofDetails  String
   status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  pointsAwarded Int       @default(0)
 
   createdAt     DateTime  @default(now())
+}
+
+model ChatMessage {
+  id                 String    @id @default(cuid())
+  itemId             String
+  item               Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  senderId           String
+  sender             User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  senderName         String
+  content            String
+  isPredefinedSafety Boolean   @default(false) // Predefined safety messages
+
+  createdAt          DateTime  @default(now())
 }

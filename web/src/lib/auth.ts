@@ -8,6 +8,7 @@ const COOKIE_NAME = 'findora_session';
 
 export interface UserSession {
   id: string;
+  sapId?: string | null;
   name: string;
   email: string;
   role: 'ADMIN' | 'USER' | 'GUEST';
@@ -15,6 +16,8 @@ export interface UserSession {
   phone?: string | null;
   department?: string | null;
   collegeId?: string | null;
+  points?: number;
+  badge?: string;
 }
 
 export function signSessionToken(user: UserSession): string {
@@ -42,6 +45,7 @@ export async function getCurrentUser(): Promise<UserSession | null> {
     where: { id: session.id },
     select: {
       id: true,
+      sapId: true,
       name: true,
       email: true,
       role: true,
@@ -49,6 +53,8 @@ export async function getCurrentUser(): Promise<UserSession | null> {
       phone: true,
       department: true,
       collegeId: true,
+      points: true,
+      badge: true,
     },
   });
 

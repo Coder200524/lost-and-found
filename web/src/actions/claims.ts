@@ -63,6 +63,17 @@ export async function resolveClaimAction(claimId: string, status: 'APPROVED' | '
         where: { id: claim.itemId },
         data: { status: 'RESOLVED' },
       });
+
+      // Award Points to finder (SVKM Reward / Points System)
+      if (claim.item.userId) {
+        await prisma.user.update({
+          where: { id: claim.item.userId },
+          data: {
+            points: { increment: 50 },
+            badge: 'Campus Hero',
+          },
+        });
+      }
     } else {
       await prisma.item.update({
         where: { id: claim.itemId },

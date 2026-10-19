@@ -21,13 +21,13 @@ class _BrowseScreenState extends State<BrowseScreen> {
 
   final List<String> _categories = [
     'All',
+    'ID Cards',
+    'Bottles',
+    'Stationery',
     'Electronics',
-    'ID & Cards',
-    'Books & Stationery',
+    'Bags',
     'Accessories',
-    'Keys',
-    'Clothing',
-    'Other',
+    'Others',
   ];
 
   @override

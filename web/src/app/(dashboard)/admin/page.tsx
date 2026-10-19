@@ -20,11 +20,15 @@ export default async function AdminPage() {
     }),
     prisma.item.count({ where: { status: 'RESOLVED' } }),
     prisma.user.findMany({
-      select: { id: true, name: true, email: true, role: true, department: true },
+      select: { id: true, sapId: true, name: true, email: true, role: true, department: true, points: true, badge: true },
     }),
     prisma.item.groupBy({
       by: ['category'],
       _count: { id: true },
+    }),
+    prisma.item.findMany({
+      where: { reportsCount: { gt: 0 } },
+      orderBy: { reportsCount: 'desc' },
     }),
   ]);
 
@@ -175,7 +179,12 @@ export default async function AdminPage() {
               <div key={u.id} className="flex justify-between items-center text-xs py-1.5 border-b border-pink-50">
                 <div>
                   <div className="font-bold text-slate-800">{u.name}</div>
-                  <div className="text-[11px] text-slate-400">{u.email}</div>
+                  <div className="text-[11px] text-slate-400">
+                    SAP: <span className="font-mono font-semibold text-slate-600">{u.sapId || 'N/A'}</span> • {u.email}
+                  </div>
+                  <div className="text-[10px] text-amber-700 font-semibold mt-0.5">
+                    🏆 {u.points} pts ({u.badge || 'Scout'})
+                  </div>
                 </div>
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${

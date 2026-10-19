@@ -41,14 +41,22 @@ export default async function ProfilePage() {
 
           <p className="text-xs text-slate-500 mb-4">{user.email}</p>
 
-          <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-xs text-slate-600">
+          <div className="flex flex-wrap justify-center sm:justify-start gap-3 text-xs text-slate-600">
+            <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-pink-100">
+              <span className="font-semibold text-slate-400">SVKM SAP ID:</span>{' '}
+              <span className="font-bold font-mono">{user.sapId || user.collegeId || '60004210045'}</span>
+            </div>
+            <div className="bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 text-amber-800">
+              <span className="font-semibold">🏆 Points Balance:</span>{' '}
+              <span className="font-bold">{user.points ?? 50} pts</span>
+            </div>
+            <div className="bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-200 text-purple-800">
+              <span className="font-semibold">🎖️ Tier:</span>{' '}
+              <span className="font-bold">{user.badge || 'Campus Helper'}</span>
+            </div>
             <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-pink-100">
               <span className="font-semibold text-slate-400">Department:</span>{' '}
               <span className="font-bold">{user.department || 'Information Technology'}</span>
-            </div>
-            <div className="bg-white/80 px-3 py-1.5 rounded-lg border border-pink-100">
-              <span className="font-semibold text-slate-400">ID / Roll No:</span>{' '}
-              <span className="font-bold">{user.collegeId || 'DJSCE-2024'}</span>
             </div>
           </div>
         </div>

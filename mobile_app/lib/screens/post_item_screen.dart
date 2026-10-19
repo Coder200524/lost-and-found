@@ -31,13 +31,13 @@ class _PostItemScreenState extends State<PostItemScreen> {
   bool _submitting = false;
 
   final List<String> _categories = [
+    'ID Cards',
+    'Bottles',
+    'Stationery',
     'Electronics',
-    'ID & Cards',
-    'Books & Stationery',
+    'Bags',
     'Accessories',
-    'Keys',
-    'Clothing',
-    'Other',
+    'Others',
   ];
 
   void _triggerGeminiAutoDetect() {
@@ -65,7 +65,25 @@ class _PostItemScreenState extends State<PostItemScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Mindmap Rule: "Post Found Item: MANDATORY IMAGE!"
+    if (_type == 'FOUND' && _imageCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('📸 A photo is MANDATORY for all Found items to enable verification!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _submitting = true);
+
+    final locLower = _locCtrl.text.trim().toLowerCase();
+    final isHotspot = locLower.contains('canteen') ||
+        locLower.contains('library') ||
+        locLower.contains('402') ||
+        locLower.contains('lab') ||
+        locLower.contains('gymkhana');
 
     final newItem = Item(
       id: '',
@@ -74,6 +92,8 @@ class _PostItemScreenState extends State<PostItemScreen> {
       category: _category,
       type: _type,
       location: _locCtrl.text.trim(),
+      isHotspot: isHotspot,
+      isMasked: _category == 'ID Cards',
       dateOccurred: _dateCtrl.text.trim(),
       status: 'OPEN',
       imageUrl: _imageCtrl.text.trim(),

@@ -27,6 +27,22 @@ export async function createItemAction(formData: FormData) {
       return { success: false, error: 'Please fill in all mandatory fields.' };
     }
 
+    // Mindmap Rule: "Post Found Item: MANDATORY IMAGE!"
+    if (type.toUpperCase() === 'FOUND' && (!imageUrl || imageUrl.trim() === '')) {
+      return { success: false, error: 'A photo is MANDATORY for all Found items to enable verification!' };
+    }
+
+    const locLower = location.toLowerCase();
+    const isHotspot =
+      locLower.includes('canteen') ||
+      locLower.includes('library') ||
+      locLower.includes('402') ||
+      locLower.includes('lab') ||
+      locLower.includes('gymkhana');
+
+    const isMasked = category === 'ID Cards' || title.toLowerCase().includes('id');
+    const isUrgent = (formData.get('isUrgent') as string) === 'true';
+
     const item = await prisma.item.create({
       data: {
         title,
@@ -34,6 +50,9 @@ export async function createItemAction(formData: FormData) {
         category,
         type: type.toUpperCase(),
         location,
+        isHotspot,
+        isMasked,
+        isUrgent,
         dateOccurred,
         imageUrl,
         reward,

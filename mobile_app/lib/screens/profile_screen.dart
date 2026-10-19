@@ -59,15 +59,24 @@ class ProfileScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('SAP ID: 60004210045', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                    Text('DJSCE Mumbai', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                    const Text('SAP ID: 60004210045', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade400,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text('🏆 250 PTS', style: TextStyle(color: Colors.black87, fontSize: 10, fontWeight: FontWeight.w900)),
+                    ),
                   ],
                 ),
+                const SizedBox(height: 4),
+                const Text('Badge: 🎖️ Campus Hero (Top Contributor)', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
           // Evaluation credentials section
           Card(
@@ -79,11 +88,12 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('⚡ Evaluation Test Accounts (RBAC):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const Text('⚡ SVKM Evaluation Logins (SAP ID):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
-                  _buildAccountRow('Admin', 'admin@djsce.edu', 'admin123'),
-                  _buildAccountRow('Student', 'rahul@djsce.edu', 'student123'),
-                  _buildAccountRow('Guest', 'guest@djsce.edu', 'guest123'),
+                  _buildAccountRow('Admin', 'ADMIN-001 (admin@djsce.edu)', 'admin123'),
+                  _buildAccountRow('Student', '60004210045 (rahul@djsce.edu)', 'student123'),
+                  _buildAccountRow('Student', '60004210088 (priya@djsce.edu)', 'student123'),
+                  _buildAccountRow('Guest', 'GUEST-999 (guest@djsce.edu)', 'guest123'),
                 ],
               ),
             ),

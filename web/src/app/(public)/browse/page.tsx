@@ -48,13 +48,13 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
   const categories = [
     'All',
+    'ID Cards',
+    'Bottles',
+    'Stationery',
     'Electronics',
-    'ID & Cards',
-    'Books & Stationery',
+    'Bags',
     'Accessories',
-    'Keys',
-    'Clothing',
-    'Other',
+    'Others',
   ];
 
   return (

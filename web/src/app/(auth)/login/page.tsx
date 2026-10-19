@@ -1,6 +1,6 @@
 'use client';
 
-// Authentication & RBAC Control (FST Unit 5: Multi-tenant protection & Role-based authorization)
+// SVKM Authentication & Role-Based Access Control (Mindmap: SAP ID + Password Login)
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,11 +12,12 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   // Form states
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [identifier, setIdentifier] = useState('60004210045');
+  const [password, setPassword] = useState('student123');
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [sapId, setSapId] = useState('');
   const [department, setDepartment] = useState('Information Technology');
-  const [collegeId, setCollegeId] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,8 +26,8 @@ export default function LoginPage() {
 
     const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
     const payload = isRegister
-      ? { name, email, password, department, collegeId }
-      : { email, password };
+      ? { name, email, sapId, password, department, collegeId: sapId }
+      : { email: identifier, sapId: identifier, password };
 
     try {
       const res = await fetch(endpoint, {
@@ -50,9 +51,8 @@ export default function LoginPage() {
     }
   }
 
-  // Quick preset login for quick testing & evaluation
-  function handleQuickFill(presetEmail: string, presetPass: string) {
-    setEmail(presetEmail);
+  function handleQuickFill(presetId: string, presetPass: string) {
+    setIdentifier(presetId);
     setPassword(presetPass);
   }
 
@@ -65,40 +65,51 @@ export default function LoginPage() {
             <span className="text-3xl">🌸</span>
             <span className="text-2xl font-black text-slate-800 tracking-tight">FinDora</span>
           </Link>
+          <div className="inline-block px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold uppercase tracking-wider mb-2">
+            🔒 SVKM Members Only (Restricted)
+          </div>
           <h2 className="text-xl font-bold text-slate-800">
-            {isRegister ? 'Create Campus Account' : 'Sign In to FinDora'}
+            {isRegister ? 'Register SVKM Student' : 'SVKM SAP ID Sign In'}
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            DJSCE SVKM Campus Identity & Session Portal
+            Dwarkadas J. Sanghvi College of Engineering
           </p>
         </div>
 
         {/* Quick Demo Role Fillers */}
-        <div className="bg-pink-50/70 p-3 rounded-xl border border-pink-100 mb-6">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-            ⚡ Quick Evaluation Logins:
+        <div className="bg-pink-50/70 p-3.5 rounded-xl border border-pink-100 mb-6">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2 flex justify-between">
+            <span>⚡ SVKM SAP ID Presets:</span>
+            <span className="text-pink-600 font-semibold">One-Click</span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
-              onClick={() => handleQuickFill('admin@djsce.edu', 'admin123')}
-              className="px-2 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-[11px] font-bold transition"
+              onClick={() => handleQuickFill('60004210045', 'student123')}
+              className="px-2.5 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-[11px] font-bold transition text-left"
             >
-              🛡️ Admin
+              👨‍🎓 Rahul: <code className="font-mono text-[10px]">60004210045</code>
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('rahul@djsce.edu', 'student123')}
-              className="px-2 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-[11px] font-bold transition"
+              onClick={() => handleQuickFill('60004210088', 'student123')}
+              className="px-2.5 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 text-[11px] font-bold transition text-left"
             >
-              👨‍🎓 Student
+              👩‍🎓 Priya: <code className="font-mono text-[10px]">60004210088</code>
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('guest@djsce.edu', 'guest123')}
-              className="px-2 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 text-[11px] font-bold transition"
+              onClick={() => handleQuickFill('ADMIN-001', 'admin123')}
+              className="px-2.5 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 text-[11px] font-bold transition text-left"
             >
-              👤 Guest
+              🛡️ Admin: <code className="font-mono text-[10px]">ADMIN-001</code>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('GUEST-999', 'guest123')}
+              className="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 text-[11px] font-bold transition text-left"
+            >
+              👤 Guest: <code className="font-mono text-[10px]">GUEST-999</code>
             </button>
           </div>
         </div>
@@ -110,7 +121,7 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
-          {isRegister && (
+          {isRegister ? (
             <>
               <div>
                 <label className="text-xs font-semibold text-slate-600 block mb-1">Full Name</label>
@@ -120,6 +131,30 @@ export default function LoginPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aryan Patel"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600 block mb-1">SVKM SAP ID (11 digits)</label>
+                <input
+                  type="text"
+                  required
+                  value={sapId}
+                  onChange={(e) => setSapId(e.target.value)}
+                  placeholder="e.g. 60004210099"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600 block mb-1">College Email (@djsce.edu)</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. student@djsce.edu"
                   className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
                 />
               </div>
@@ -135,34 +170,24 @@ export default function LoginPage() {
                   <option value="Computer Engineering">Computer Engineering</option>
                   <option value="Data Science / AI&DS">Data Science / AI&DS</option>
                   <option value="Electronics & Telecomm">Electronics & Telecomm</option>
-                  <option value="Mechanical Engineering">Mechanical Engineering</option>
                 </select>
               </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600 block mb-1">College Roll / SAP ID</label>
-                <input
-                  type="text"
-                  value={collegeId}
-                  onChange={(e) => setCollegeId(e.target.value)}
-                  placeholder="e.g. 60004210045"
-                  className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                />
-              </div>
             </>
+          ) : (
+            <div>
+              <label className="text-xs font-semibold text-slate-600 block mb-1">
+                SVKM SAP ID or College Email
+              </label>
+              <input
+                type="text"
+                required
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="e.g. 60004210045 or student@djsce.edu"
+                className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300 font-medium"
+              />
+            </div>
           )}
-
-          <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">College Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. student@djsce.edu"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
-            />
-          </div>
 
           <div>
             <label className="text-xs font-semibold text-slate-600 block mb-1">Password</label>
@@ -181,12 +206,12 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full mt-2 py-3 rounded-full bg-[#e8848f] hover:bg-[#d86f7b] text-white font-bold text-xs shadow-md transition disabled:opacity-50"
           >
-            {loading ? 'Authenticating...' : isRegister ? 'Complete Registration' : 'Sign In'}
+            {loading ? 'Verifying SVKM Credentials...' : isRegister ? 'Register SVKM Account' : 'Sign In via SAP ID'}
           </button>
         </form>
 
         <div className="mt-6 text-center text-xs text-slate-500">
-          {isRegister ? 'Already have an account?' : "Don't have an account yet?"}{' '}
+          {isRegister ? 'Already registered?' : 'New SVKM student/staff?'}{' '}
           <button
             type="button"
             onClick={() => {
@@ -195,7 +220,7 @@ export default function LoginPage() {
             }}
             className="text-pink-600 font-bold hover:underline"
           >
-            {isRegister ? 'Sign In' : 'Create Account'}
+            {isRegister ? 'Sign In via SAP ID' : 'Register Account'}
           </button>
         </div>
       </div>

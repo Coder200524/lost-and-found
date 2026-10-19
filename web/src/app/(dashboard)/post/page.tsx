@@ -72,21 +72,25 @@ export default async function PostItemPage() {
               >
                 <option value="Electronics">Electronics (AirPods, Laptops, Phones)</option>
                 <option value="ID & Cards">ID & Cards (College ID, Metro)</option>
-                <option value="Books & Stationery">Books & Stationery (Calculators, Books)</option>
-                <option value="Accessories">Accessories (Bottles, Bags)</option>
-                <option value="Keys">Keys (Locker, Bike keys)</option>
-                <option value="Clothing">Clothing (Jackets, Hoodies)</option>
-                <option value="Other">Other Items</option>
+                <option value="ID Cards">ID Cards (College ID, Metro)</option>
+                <option value="Bottles">Bottles (Flask, Water Bottles)</option>
+                <option value="Stationery">Stationery (Calculators, Books, Notes)</option>
+                <option value="Electronics">Electronics (AirPods, Laptops, Phones)</option>
+                <option value="Bags">Bags (Backpacks, Totes)</option>
+                <option value="Accessories">Accessories (Glasses, Keys, Watches)</option>
+                <option value="Others">Others</option>
               </select>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Campus Location *</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Campus Location (Hotspot Zone) *
+              </label>
               <input
                 type="text"
                 name="location"
                 required
-                placeholder="e.g. Room 402, Library 3rd Floor, Canteen"
+                placeholder="e.g. Canteen, Library 3rd Floor, Room 402, IT Lab 3"
                 className="w-full text-xs px-3.5 py-2.5 rounded-lg bg-white border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-300"
               />
             </div>
@@ -105,7 +109,9 @@ export default async function PostItemPage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Photo Image URL (Optional)</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Photo Image URL <span className="text-rose-500 font-semibold">(Mandatory for Found Items)</span>
+              </label>
               <input
                 type="url"
                 name="imageUrl"

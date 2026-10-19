@@ -1,4 +1,4 @@
-// Dart Data Model: Item (ADF Module: Exploring Dart Language - Classes, Types, Serialization)
+// Dart Data Model: Item (ADF Module: Exploring Dart Language - SVKM Mindmap Schema)
 class Item {
   final String id;
   final String title;
@@ -6,6 +6,10 @@ class Item {
   final String category;
   final String type; // 'LOST' or 'FOUND'
   final String location;
+  final bool isHotspot;
+  final bool isMasked;
+  final bool isUrgent;
+  final int reportsCount;
   final String dateOccurred;
   final String status; // 'OPEN', 'CLAIMED', 'RESOLVED'
   final String imageUrl;
@@ -22,6 +26,10 @@ class Item {
     required this.category,
     required this.type,
     required this.location,
+    this.isHotspot = false,
+    this.isMasked = false,
+    this.isUrgent = false,
+    this.reportsCount = 0,
     required this.dateOccurred,
     required this.status,
     required this.imageUrl,
@@ -37,9 +45,13 @@ class Item {
       id: json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      category: json['category'] ?? 'Other',
+      category: json['category'] ?? 'Others',
       type: (json['type'] ?? 'LOST').toString().toUpperCase(),
       location: json['location'] ?? 'Campus',
+      isHotspot: json['isHotspot'] ?? false,
+      isMasked: json['isMasked'] ?? false,
+      isUrgent: json['isUrgent'] ?? false,
+      reportsCount: json['reportsCount'] ?? 0,
       dateOccurred: json['dateOccurred'] ?? '',
       status: (json['status'] ?? 'OPEN').toString().toUpperCase(),
       imageUrl: json['imageUrl'] ?? '',
@@ -58,6 +70,9 @@ class Item {
       'category': category,
       'type': type,
       'location': location,
+      'isHotspot': isHotspot,
+      'isMasked': isMasked,
+      'isUrgent': isUrgent,
       'dateOccurred': dateOccurred,
       'imageUrl': imageUrl,
       'reward': reward,

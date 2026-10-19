@@ -58,6 +58,14 @@ Below is the complete, step-by-step chronological record of all commands run and
 | **20** | Verification | `npm run build --webpack` | Built and validated Next.js production bundle (17/17 routes compiled, 0 errors). |
 | **21** | Mobile (ADF) | `mobile_app/lib/...` | Created Dart models, `ApiService`, `GeminiService`, custom widgets, and 5 multi-page screens. |
 | **22** | Verification | `flutter analyze` | Executed Flutter Dart static analyzer (`No issues found!`). |
+| **23** | Clean-up | `Remove-Item *.html` | Cleaned up root directory HTML files while preserving original source files in `legacy-html/`. |
+| **24** | Mindmap Schema | `prisma/schema.prisma` update | Added `sapId`, `points`, `badge` to `User`; `isHotspot`, `isMasked`, `isUrgent`, `reportsCount` to `Item`; added `ChatMessage` model for in-app chat. |
+| **25** | Database Sync | `npx prisma db push` & `node seed.mjs` | Applied schema changes to SQLite and re-seeded with SVKM SAP IDs, Points, Badges, and Hotspot areas. |
+| **26** | Auth / SAP ID | `src/app/api/auth/login` & `(auth)/login` | Implemented SVKM SAP ID + Password login restricting outsiders, with quick 1-click evaluation logins for Admin (`ADMIN-001`), Students (`60004210045`, `60004210088`), and Guest (`GUEST-999`). |
+| **27** | Privacy & Security | `src/app/(public)/items/[id]` | Enforced Mindmap privacy rules: hidden personal phone/email from public cards, masked sensitive ID card details, and added predefined handover safety protocol. |
+| **28** | Found Item Rule | `src/actions/items.ts` & Mobile form | Enforced "MANDATORY PHOTO" validation rule on all Found items before submission. |
+| **29** | Points System | `src/actions/claims.ts` & Profile | Implemented Reward/Points system: Finder awarded +50 points and upgraded badge on claim approval. |
+| **30** | Chat & Moderation | `/api/chat` & `/api/items/[id]/report` | Created In-App Chat endpoint with safety reminders and Report Misuse / Fake Claim moderation endpoint. |
 
 ---
 
@@ -84,6 +92,23 @@ Below is the complete, step-by-step chronological record of all commands run and
 | **Module 2 & 3** | **Introduction to Flutter and Dart Language**<br>• Flutter toolchain, SDK, basics of Dart<br>• Internals of Dart, types, functions, classes, libraries | • Pure Dart typed classes: `mobile_app/lib/models/item.dart` with JSON serialization (`fromJson` / `toJson`).<br>• Asynchronous Dart programming using `async` / `await` and `Future`. |
 | **Module 4** | **Working with Flutter**<br>• Development process, Widgets, Forms, Navigation, Styling | • Material 3 UI theming: `mobile_app/lib/main.dart` with custom color schemes.<br>• Custom Widgets: `ItemCard`, `StatusChip`, `TypeBadge` in `mobile_app/lib/widgets/`.<br>• Form validation & interaction: `mobile_app/lib/screens/post_item_screen.dart` using `GlobalKey<FormState>`. |
 | **Module 5** | **Building a Flutter Application (Mini Project II)**<br>• Multi-page app that fetches web API data<br>• Common Flutter widgets for layouts, images, media | • `mobile_app/lib/services/api_service.dart`: Fetches live web API data from the Next.js backend.<br>• 5-tab multi-page navigation shell: Home, Browse, Gemini AI Matcher, Report, Profile.<br>• Network images with loading fallback placeholders and pull-to-refresh (`RefreshIndicator`). |
+
+---
+
+### Part III: SVKM Swipe & Find Architectural Mindmap Implementation Matrix
+
+| Mindmap Branch | Requirement from Chart | Implementation in Next.js (`web/`) & Flutter (`mobile_app/`) |
+|---|---|---|
+| **Users** | • SVKM Students (Login: SAP ID)<br>• Faculty / Staff<br>• Admin Panel (Verification, Moderation) | • Seeded student accounts with SAP IDs (`60004210045`, `60004210088`), Admin (`ADMIN-001`), and Guest (`GUEST-999`).<br>• Admin Panel at `/admin` for verification and moderation. |
+| **Authentication System** | • SAP ID + Password Login<br>• College Database Integration<br>• Restrict Outsiders (SVKM Only) | • Multi-lookup auth supporting 11-digit SVKM SAP ID or college email.<br>• Non-SVKM login attempts restricted via `src/app/api/auth/login/route.ts` and `src/proxy.ts`. |
+| **Main Features** | • Post Lost Item (Details, location, reward)<br>• Post Found Item (**MANDATORY IMAGE!**, Claim request enabled)<br>• Swipe Feature (Hinge-Style: Right = "My Item!", Left = "Not Relevant")<br>• Search & Filter | • Found items strictly require image upload before submission.<br>• Swipe Matcher at `/swipe` with Tinder/Hinge-style cards, match saving, and shortlist.<br>• Filter bar with type pills, categories, and keyword search. |
+| **Privacy & Security** | • **Hide Personal Info** (No phone/email public)<br>• Mask Sensitive Details (ID Numbers Blurred)<br>• Report Misuse / Fake Claims | • Public item cards and detail pages do **NOT** expose raw phone numbers or emails; all verification is conducted through the platform.<br>• Automatic masking on ID Card items (`isMasked: true`).<br>• Report Misuse endpoint at `/api/items/[id]/report` and UI report button. |
+| **Categories** | ID Cards, Bottles, Stationery, Electronics, Bags, Accessories, Others | Aligned across Prisma schema, dropdown forms, browse category pills, and Flutter filter bar. |
+| **Communication System** | • In-App Chat After Match<br>• Predefined Safety Messages<br>• Proof of Ownership Step Before Handover | • In-App Chat endpoint at `/api/chat` for verified item communications.<br>• Predefined Handover Safety protocol banner displayed on all item pages.<br>• Proof of ownership form required before claim submission. |
+| **Location System** | • Tag Exact/Approximate Location<br>• "Hotspot Zones" (High Loss Areas) | • Hotspot detection for high-loss campus zones: Canteen, Central Library 3rd Floor, Room 402, IT Lab 3, Gymkhana.<br>• High-visibility Hotspot Zone badges on affected items. |
+| **Admin Features** | • Approve/Reject Posts<br>• Remove Fake/Spam Posts<br>• Handle Reports<br>• Manage SAP Database | • Security Moderation Console at `/admin` with one-click claim approval and rejection Server Actions.<br>• User SAP ID directory and reported items queue. |
+| **Matching Logic** | • Category, Location Proximity, Date Similarity<br>• Suggest "Possible Matches" | • Gemini AI Semantic Matcher at `/api/ai/match` scoring title, description, and location proximity. |
+| **Innovative Features** | • AI Matching Suggestions ("This might be your item")<br>• Reward / Points System (Earn points for returning items)<br>• Lost Alerts (Notify nearby users) | • Automatic +50 Points & "Campus Hero" badge awarded to finders upon claim approval.<br>• Points balance displayed on user profile.<br>• Lost Alerts urgent banner for time-sensitive belongings. |
 
 ---
 
