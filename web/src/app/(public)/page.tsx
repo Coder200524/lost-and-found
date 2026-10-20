@@ -159,7 +159,7 @@ export default async function HomePage() {
       </div>
 
       {/* HOW IT WORKS */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 0 96px' }}>
+      <div className="how-wrapper">
         <div className="how-section">
           <div className="section-label" style={{ color: 'var(--lav-d)' }}>
             How It Works

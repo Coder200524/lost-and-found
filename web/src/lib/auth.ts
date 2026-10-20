@@ -1,6 +1,6 @@
 // Modern Authentication & Session Control (FST Unit 5)
 import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { prisma } from './prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'findora-secret-key-djsce-fst-adf-2024-token';
@@ -34,7 +34,20 @@ export function verifySessionToken(token: string): UserSession | null {
 
 export async function getCurrentUser(): Promise<UserSession | null> {
   const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
+  let token = cookieStore.get(COOKIE_NAME)?.value;
+
+  if (!token) {
+    try {
+      const headerStore = await headers();
+      const authHeader = headerStore.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7).trim();
+      }
+    } catch {
+      // Header store unavailable
+    }
+  }
+
   if (!token) return null;
 
   const session = verifySessionToken(token);

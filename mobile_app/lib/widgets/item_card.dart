@@ -6,11 +6,101 @@ import 'status_chip.dart';
 class ItemCard extends StatelessWidget {
   final Item item;
   final VoidCallback onTap;
+  final bool isGrid;
 
-  const ItemCard({super.key, required this.item, required this.onTap});
+  const ItemCard({
+    super.key,
+    required this.item,
+    required this.onTap,
+    this.isGrid = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (isGrid) {
+      return Card(
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.pink.shade100.withValues(alpha: 0.6)),
+        ),
+        color: Colors.white,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Media Image (Proportional)
+              Expanded(
+                flex: 5,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: item.imageUrl.isNotEmpty
+                        ? Image.network(
+                            item.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                          )
+                        : _buildPlaceholder(),
+                  ),
+                ),
+              ),
+
+              // Card Body
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TypeBadge(type: item.type),
+                          StatusChip(status: item.status),
+                        ],
+                      ),
+                      Text(
+                        item.title,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2D3748),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_outlined, size: 12, color: Colors.grey.shade500),
+                          const SizedBox(width: 2),
+                          Expanded(
+                            child: Text(
+                              item.location,
+                              style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Default Full-Width Card (e.g. on HomeScreen)
     return Card(
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -34,7 +124,7 @@ class ItemCard extends StatelessWidget {
                       height: 160,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => _buildPlaceholder(),
+                      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
                     )
                   : _buildPlaceholder(),
             ),
@@ -109,11 +199,9 @@ class ItemCard extends StatelessWidget {
 
   Widget _buildPlaceholder() {
     return Container(
-      height: 140,
-      width: double.infinity,
       color: const Color(0xFFFDE8EA),
       child: const Center(
-        child: Text('📦', style: TextStyle(fontSize: 48)),
+        child: Text('📦', style: TextStyle(fontSize: 40)),
       ),
     );
   }

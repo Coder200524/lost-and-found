@@ -2,9 +2,10 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/browse_screen.dart';
-import 'screens/gemini_matcher_screen.dart';
-import 'screens/post_item_screen.dart';
+import 'screens/swipe_screen.dart';
+import 'screens/chat_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/post_item_screen.dart';
 
 void main() {
   runApp(const FinDoraApp());
@@ -57,8 +58,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final screens = [
       HomeScreen(onNavigateTab: _switchTab),
       const BrowseScreen(),
-      const GeminiMatcherScreen(),
-      PostItemScreen(onItemPosted: () => _switchTab(1)),
+      SwipeScreen(onNavigateTab: _switchTab),
+      const ChatScreen(),
       const ProfileScreen(),
     ];
 
@@ -66,6 +67,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       body: IndexedStack(
         index: _currentIndex,
         children: screens,
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFE8848F),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: const CircleBorder(),
+        tooltip: 'Report Lost or Found Item',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => PostItemScreen(onItemPosted: () => _switchTab(1))),
+          );
+        },
+        child: const Icon(Icons.add, size: 28),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -100,14 +115,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               label: 'Browse',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.auto_awesome_outlined),
-              activeIcon: Icon(Icons.auto_awesome),
-              label: 'Gemini AI',
+              icon: Icon(Icons.style_outlined),
+              activeIcon: Icon(Icons.style),
+              label: 'Swipe',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline),
-              activeIcon: Icon(Icons.add_circle),
-              label: 'Report',
+              icon: Icon(Icons.chat_bubble_outline),
+              activeIcon: Icon(Icons.chat_bubble),
+              label: 'Chat',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),

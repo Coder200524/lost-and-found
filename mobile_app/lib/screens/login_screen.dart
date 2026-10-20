@@ -1,0 +1,240 @@
+// SVKM Student Login Screen for FinDora Mobile App
+import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+
+class LoginScreen extends StatefulWidget {
+  final VoidCallback? onLoginSuccess;
+  const LoginScreen({super.key, this.onLoginSuccess});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _idController = TextEditingController(text: '60004210045');
+  final _passwordController = TextEditingController(text: 'student123');
+  bool _obscurePassword = true;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _handleLogin() async {
+    final id = _idController.text.trim();
+    final pwd = _passwordController.text;
+
+    if (id.isEmpty || pwd.isEmpty) {
+      setState(() => _errorMessage = 'Please enter SAP ID / Email and password.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final res = await AuthService().login(identifier: id, password: pwd);
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (res['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF5BBF8E),
+            content: Text('Welcome, ${AuthService().currentUser?.name ?? "Student"}! 🎓'),
+          ),
+        );
+        widget.onLoginSuccess?.call();
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      } else {
+        setState(() => _errorMessage = res['error'] ?? 'Authentication failed.');
+      }
+    }
+  }
+
+  void _quickFill(String sapId, String password) {
+    _idController.text = sapId;
+    _passwordController.text = password;
+    _handleLogin();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFFEF4F7),
+      appBar: AppBar(
+        title: const Text('SVKM Student Login', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Logo & Header
+            Center(
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8848F).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Text('✦', style: TextStyle(fontSize: 36, color: Color(0xFFE8848F))),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Welcome to FinDora',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF3A3040)),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Sign in using your SVKM SAP ID or College credentials',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: Color(0xFF7A6E80)),
+            ),
+            const SizedBox(height: 32),
+
+            // Form Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_errorMessage != null)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                      ),
+                    ),
+
+                  // SAP ID / Email Input
+                  const Text('SVKM SAP ID or College Email', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _idController,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFFE8848F)),
+                      hintText: 'e.g. 60004210045 or name@djsce.edu',
+                      filled: true,
+                      fillColor: const Color(0xFFFBF8FA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password Input
+                  const Text('Password', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFE8848F)),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                      hintText: 'Enter password',
+                      filled: true,
+                      fillColor: const Color(0xFFFBF8FA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Login Button
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _handleLogin,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE8848F),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Sign In 🚀', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // Demo Accounts Chips
+            const Text(
+              '⚡ Quick Demo Sign In (1-Tap):',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF7A6E80)),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ActionChip(
+                  avatar: const Text('👨‍🎓'),
+                  label: const Text('Rahul (Student)'),
+                  backgroundColor: Colors.white,
+                  onPressed: () => _quickFill('60004210045', 'student123'),
+                ),
+                ActionChip(
+                  avatar: const Text('👩‍🎓'),
+                  label: const Text('Priya (Student)'),
+                  backgroundColor: Colors.white,
+                  onPressed: () => _quickFill('60004210088', 'student123'),
+                ),
+                ActionChip(
+                  avatar: const Text('🛡️'),
+                  label: const Text('Admin Sharma'),
+                  backgroundColor: Colors.white,
+                  onPressed: () => _quickFill('ADMIN-001', 'admin123'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
