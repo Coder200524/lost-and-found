@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import MobileCategoryCarousel from '@/components/MobileCategoryCarousel';
+import MobileFeatureCards from '@/components/MobileFeatureCards';
 
 export default async function HomePage() {
   const [totalItems, resolvedCount, recentItems, currentUser] = await Promise.all([
@@ -151,6 +153,9 @@ export default async function HomePage() {
             <p>Earn points each time you successfully return a found item to its rightful owner.</p>
           </Link>
         </div>
+
+        {/* Mobile Swipeable Feature Cards Carousel */}
+        <MobileFeatureCards />
       </div>
 
       {/* HOW IT WORKS */}
@@ -165,57 +170,72 @@ export default async function HomePage() {
           </h2>
 
           <div className="steps">
-            <div className="step">
+            <div className="steps-timeline-line" aria-hidden="true" />
+            <div className="step step-1">
               <div className="step-num" style={{ background: 'var(--rose)', color: 'var(--rose-d)' }}>
                 1
               </div>
-              <h4>Login with SAP ID</h4>
-              <p>Authenticate securely using your SVKM SAP ID &amp; OTP</p>
+              <div className="step-card">
+                <h4>Login with SAP ID</h4>
+                <p>Authenticate securely using your SVKM SAP ID &amp; OTP</p>
+              </div>
             </div>
-            <div className="step">
+            <div className="step step-2">
               <div
                 className="step-num"
                 style={{ background: 'var(--lavender)', color: 'var(--lav-d)' }}
               >
                 2
               </div>
-              <h4>Choose Action</h4>
-              <p>Report a lost item or a found item</p>
+              <div className="step-card">
+                <h4>Choose Action</h4>
+                <p>Report a lost item or a found item</p>
+              </div>
             </div>
-            <div className="step">
+            <div className="step step-3">
               <div className="step-num" style={{ background: 'var(--mint)', color: 'var(--mint-d)' }}>
                 3
               </div>
-              <h4>Fill Details</h4>
-              <p>Add description, category, location &amp; photo</p>
+              <div className="step-card">
+                <h4>Fill Details</h4>
+                <p>Add description, category, location &amp; photo</p>
+              </div>
             </div>
-            <div className="step">
+            <div className="step step-4">
               <div className="step-num" style={{ background: 'var(--sky)', color: 'var(--sky-d)' }}>
                 4
               </div>
-              <h4>Browse &amp; Swipe</h4>
-              <p>Swipe through potential matches or use search</p>
+              <div className="step-card">
+                <h4>Browse &amp; Swipe</h4>
+                <p>Swipe through potential matches or use search</p>
+              </div>
             </div>
-            <div className="step">
+            <div className="step step-5">
               <div className="step-num" style={{ background: 'var(--peach)', color: '#c07a3a' }}>
                 5
               </div>
-              <h4>Get Matched</h4>
-              <p>Both parties confirm — you both get notified</p>
+              <div className="step-card">
+                <h4>Get Matched</h4>
+                <p>Both parties confirm — you both get notified</p>
+              </div>
             </div>
-            <div className="step">
+            <div className="step step-6">
               <div className="step-num" style={{ background: 'var(--lemon)', color: '#8a7a00' }}>
                 6
               </div>
-              <h4>Chat &amp; Verify</h4>
-              <p>Prove ownership via secure in-app chat</p>
+              <div className="step-card">
+                <h4>Chat &amp; Verify</h4>
+                <p>Prove ownership via secure in-app chat</p>
+              </div>
             </div>
-            <div className="step">
+            <div className="step step-7">
               <div className="step-num" style={{ background: 'var(--rose)', color: 'var(--rose-d)' }}>
                 7
               </div>
-              <h4>Return Item 🎉</h4>
-              <p>Arrange handover at college security desk</p>
+              <div className="step-card">
+                <h4>Return Item 🎉</h4>
+                <p>Arrange handover at college security desk</p>
+              </div>
             </div>
           </div>
         </div>
@@ -225,7 +245,9 @@ export default async function HomePage() {
       <div className="section" style={{ paddingTop: 0 }}>
         <div className="section-label">Item Categories</div>
         <h2 className="section-title">What can you post?</h2>
-        <div className="cats-grid">
+        
+        {/* Desktop Categories Grid */}
+        <div className="cats-grid cats-grid-desktop">
           <Link href="/browse?category=ID+Cards" className="cat-pill">
             <span>🪪</span> ID Cards
           </Link>
@@ -247,6 +269,11 @@ export default async function HomePage() {
           <Link href="/browse?category=Others" className="cat-pill">
             <span>📦</span> Others
           </Link>
+        </div>
+
+        {/* Mobile Infinite Circular Carousel */}
+        <div className="cats-mobile-wrapper">
+          <MobileCategoryCarousel />
         </div>
       </div>
 
