@@ -163,6 +163,23 @@ class AuthService extends ChangeNotifier {
     return {'success': false, 'error': 'Invalid SVKM credentials.'};
   }
 
+  void loginAsGuest() {
+    _currentUser = UserModel(
+      id: 'guest',
+      sapId: 'GUEST-01',
+      name: 'Guest Explorer',
+      email: 'guest@djsce.edu',
+      role: 'USER',
+      avatar: '🎒',
+      department: 'Visitor / Explorer',
+      collegeId: '',
+      points: 50,
+      badge: 'Explorer',
+      token: 'guest-token',
+    );
+    notifyListeners();
+  }
+
   void logout() {
     _currentUser = null;
     notifyListeners();

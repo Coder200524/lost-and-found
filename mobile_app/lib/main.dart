@@ -6,6 +6,8 @@ import 'screens/swipe_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/post_item_screen.dart';
+import 'screens/login_screen.dart';
+import 'services/auth_service.dart';
 
 void main() {
   runApp(const FinDoraApp());
@@ -17,7 +19,7 @@ class FinDoraApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FinDora — DJSCE Lost & Found',
+      title: 'Findora',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -34,7 +36,15 @@ class FinDoraApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const MainNavigationScreen(),
+      home: ListenableBuilder(
+        listenable: AuthService(),
+        builder: (context, _) {
+          if (!AuthService().isLoggedIn) {
+            return const LoginScreen();
+          }
+          return const MainNavigationScreen();
+        },
+      ),
     );
   }
 }

@@ -75,22 +75,34 @@ class _LoginScreenState extends State<LoginScreen> {
             // Logo & Header
             Center(
               child: Container(
-                width: 72,
-                height: 72,
+                width: 100,
+                height: 100,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8848F).withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE8848F).withValues(alpha: 0.25),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-                child: const Center(
-                  child: Text('✦', style: TextStyle(fontSize: 36, color: Color(0xFFE8848F))),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
             const Text(
-              'Welcome to FinDora',
+              'Welcome to Findora',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF3A3040)),
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF3A3040)),
             ),
             const SizedBox(height: 6),
             const Text(
@@ -98,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: Color(0xFF7A6E80)),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
             // Form Card
             Container(
@@ -232,6 +244,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+            Center(
+              child: TextButton.icon(
+                onPressed: () {
+                  AuthService().loginAsGuest();
+                  widget.onLoginSuccess?.call();
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
+                },
+                icon: const Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF7A6E80)),
+                label: const Text(
+                  'Continue as Guest Explorer →',
+                  style: TextStyle(
+                    color: Color(0xFF7A6E80),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),

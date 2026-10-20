@@ -44,10 +44,18 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         title: Row(
           children: [
-            const Text('🌸', style: TextStyle(fontSize: 22)),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+              ),
+            ),
             const SizedBox(width: 8),
             const Text(
-              'FinDora',
+              'Findora',
               style: TextStyle(
                 fontWeight: FontWeight.w900,
                 color: Color(0xFFE8848F),

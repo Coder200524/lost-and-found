@@ -1,11 +1,11 @@
 {
-    "name": "mobile_app",
-    "short_name": "mobile_app",
+    "name": "Findora",
+    "short_name": "Findora",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FEF4F7",
+    "theme_color": "#E8848F",
+    "description": "Findora - DJSCE Smart Campus Lost & Found System",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
