@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/item.dart';
 import '../services/api_service.dart';
+import '../services/theme_service.dart';
 import 'item_detail_screen.dart';
 
 class GeminiMatcherScreen extends StatefulWidget {
@@ -12,11 +13,29 @@ class GeminiMatcherScreen extends StatefulWidget {
 }
 
 class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
+  final _theme = ThemeService();
   final _queryCtrl = TextEditingController(text: 'AirPods Pro with blue cover');
   String _selectedType = 'LOST';
   bool _searching = false;
   String _aiSummary = '';
   List<dynamic> _matches = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _theme.addListener(_onThemeChange);
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(_onThemeChange);
+    _queryCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onThemeChange() {
+    if (mounted) setState(() {});
+  }
 
   Future<void> _performAiMatch() async {
     if (_queryCtrl.text.trim().isEmpty) return;
@@ -50,17 +69,26 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF4F7),
+      backgroundColor: _theme.scaffoldColor,
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           children: [
-            Text('✨', style: TextStyle(fontSize: 18)),
-            SizedBox(width: 8),
-            Text('Gemini Matcher', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const Text('✨', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 8),
+            Text('Gemini Matcher', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: _theme.textColor)),
           ],
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: _theme.textColor),
+        actions: [
+          IconButton(
+            icon: Icon(_theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: _theme.isDarkMode ? Colors.amber : Colors.purple.shade300),
+            tooltip: _theme.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            onPressed: () => _theme.toggleTheme(),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -94,15 +122,18 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
 
           // Query Card
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: _theme.borderColor),
+            ),
             elevation: 0,
-            color: Colors.white,
+            color: _theme.cardColor,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('I am looking for a:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  Text('I am looking for a:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _theme.textColor)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -123,9 +154,14 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
                   TextField(
                     controller: _queryCtrl,
                     maxLines: 2,
+                    style: TextStyle(color: _theme.textColor),
                     decoration: InputDecoration(
                       hintText: 'e.g. Titan leather wallet with college ID card',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      hintStyle: TextStyle(color: _theme.subtextColor.withValues(alpha: 0.7)),
+                      filled: true,
+                      fillColor: _theme.surfaceAltColor,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: _theme.borderColor)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: _theme.borderColor)),
                       isDense: true,
                     ),
                   ),
@@ -156,9 +192,9 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFEDE9FE),
+                color: _theme.isDarkMode ? const Color(0xFF281E3B) : const Color(0xFFEDE9FE),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFDDD6F3)),
+                border: Border.all(color: _theme.isDarkMode ? const Color(0xFF553C7B) : const Color(0xFFDDD6F3)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +204,11 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
                   Expanded(
                     child: Text(
                       _aiSummary,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF4C1D95)),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: _theme.isDarkMode ? const Color(0xFFD8C7F8) : const Color(0xFF4C1D95),
+                      ),
                     ),
                   ),
                 ],
@@ -178,9 +218,9 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
           const SizedBox(height: 16),
 
           if (_matches.isNotEmpty) ...[
-            const Text(
+            Text(
               'Candidate Matches Found:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: _theme.textColor),
             ),
             const SizedBox(height: 10),
             ..._matches.map((m) {
@@ -191,10 +231,11 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
 
               return Card(
                 elevation: 0,
+                color: _theme.cardColor,
                 margin: const EdgeInsets.only(bottom: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
-                  side: BorderSide(color: Colors.purple.shade100),
+                  side: BorderSide(color: _theme.borderColor),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
@@ -204,19 +245,23 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
                       Expanded(
                         child: Text(
                           item.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: _theme.textColor),
                           maxLines: 1,
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEDE9FE),
+                          color: _theme.isDarkMode ? const Color(0xFF3B2758) : const Color(0xFFEDE9FE),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           '$score% Match',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6D28D9)),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: _theme.isDarkMode ? const Color(0xFFBDA8F9) : const Color(0xFF6D28D9),
+                          ),
                         ),
                       ),
                     ],
@@ -225,11 +270,15 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 4),
-                      Text(item.description, maxLines: 2, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text(item.description, maxLines: 2, style: TextStyle(fontSize: 12, color: _theme.subtextColor)),
                       const SizedBox(height: 6),
                       Text(
                         'AI Insight: $analysis',
-                        style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: Color(0xFF5B21B6)),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: _theme.isDarkMode ? const Color(0xFFC4B5FD) : const Color(0xFF5B21B6),
+                        ),
                       ),
                     ],
                   ),

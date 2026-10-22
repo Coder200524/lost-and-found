@@ -1,6 +1,7 @@
 // Item Card Widget (ADF Module: Common Flutter Widgets for Layouts & Media)
 import 'package:flutter/material.dart';
 import '../models/item.dart';
+import '../services/theme_service.dart';
 import 'status_chip.dart';
 
 class ItemCard extends StatelessWidget {
@@ -17,15 +18,21 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeService = ThemeService();
+    final isDark = themeService.isDarkMode;
+    final cardBorder = isDark
+        ? const Color(0xFF382E48)
+        : Colors.pink.shade100.withValues(alpha: 0.6);
+
     if (isGrid) {
       return Card(
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.pink.shade100.withValues(alpha: 0.6)),
+          side: BorderSide(color: cardBorder),
         ),
-        color: Colors.white,
+        color: themeService.cardColor,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
@@ -43,9 +50,9 @@ class ItemCard extends StatelessWidget {
                         ? Image.network(
                             item.imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                            errorBuilder: (context, error, stackTrace) => _buildPlaceholder(isDark),
                           )
-                        : _buildPlaceholder(),
+                        : _buildPlaceholder(isDark),
                   ),
                 ),
               ),
@@ -68,22 +75,22 @@ class ItemCard extends StatelessWidget {
                       ),
                       Text(
                         item.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D3748),
+                          color: themeService.textColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Row(
                         children: [
-                          Icon(Icons.location_on_outlined, size: 12, color: Colors.grey.shade500),
+                          Icon(Icons.location_on_outlined, size: 12, color: isDark ? Colors.grey.shade400 : Colors.grey.shade500),
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
                               item.location,
-                              style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                              style: TextStyle(fontSize: 10, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -106,9 +113,9 @@ class ItemCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.pink.shade100.withValues(alpha: 0.6)),
+        side: BorderSide(color: cardBorder),
       ),
-      color: Colors.white,
+      color: themeService.cardColor,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -124,9 +131,9 @@ class ItemCard extends StatelessWidget {
                       height: 160,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(isDark),
                     )
-                  : _buildPlaceholder(),
+                  : _buildPlaceholder(isDark),
             ),
 
             // Card Body
@@ -145,10 +152,10 @@ class ItemCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     item.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
+                      color: themeService.textColor,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -158,7 +165,7 @@ class ItemCard extends StatelessWidget {
                     item.description,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
                       height: 1.3,
                     ),
                     maxLines: 2,
@@ -170,11 +177,11 @@ class ItemCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade500),
+                          Icon(Icons.location_on_outlined, size: 14, color: isDark ? Colors.grey.shade400 : Colors.grey.shade500),
                           const SizedBox(width: 4),
                           Text(
                             item.location,
-                            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                            style: TextStyle(fontSize: 11, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
                           ),
                         ],
                       ),
@@ -197,9 +204,9 @@ class ItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(bool isDark) {
     return Container(
-      color: const Color(0xFFFDE8EA),
+      color: isDark ? const Color(0xFF282033) : const Color(0xFFFDE8EA),
       child: const Center(
         child: Text('📦', style: TextStyle(fontSize: 40)),
       ),

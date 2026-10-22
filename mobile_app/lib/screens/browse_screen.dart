@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/item.dart';
 import '../services/api_service.dart';
+import '../services/theme_service.dart';
 import '../widgets/item_card.dart';
 import 'item_detail_screen.dart';
 
@@ -15,6 +16,7 @@ class BrowseScreen extends StatefulWidget {
 }
 
 class _BrowseScreenState extends State<BrowseScreen> {
+  final _theme = ThemeService();
   List<Item> _items = [];
   bool _loading = true;
   final _searchController = TextEditingController();
@@ -36,9 +38,20 @@ class _BrowseScreenState extends State<BrowseScreen> {
   @override
   void initState() {
     super.initState();
+    _theme.addListener(_onThemeChange);
     _selectedCategory = widget.initialCategory ?? 'All';
     _selectedType = widget.initialType ?? 'ALL';
     _fetch();
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(_onThemeChange);
+    super.dispose();
+  }
+
+  void _onThemeChange() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _fetch() async {
@@ -46,15 +59,17 @@ class _BrowseScreenState extends State<BrowseScreen> {
     final items = await ApiService.asyncFetchItems(
       query: _searchController.text,
       category: _selectedCategory,
-      type: _selectedType,
+      type: _selectedType == 'CLAIMED' ? 'ALL' : _selectedType,
     );
 
     if (mounted) {
       setState(() {
-        if (_selectedStatus != 'ALL') {
+        if (_selectedType == 'CLAIMED') {
+          _items = items.where((i) => i.status == 'CLAIMED' || i.status == 'RESOLVED').toList();
+        } else if (_selectedStatus != 'ALL') {
           _items = items.where((i) => i.status.toUpperCase() == _selectedStatus.toUpperCase()).toList();
         } else {
-          _items = items;
+          _items = items.where((i) => i.status == 'OPEN').toList();
         }
         _loading = false;
       });
@@ -73,15 +88,25 @@ class _BrowseScreenState extends State<BrowseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = _theme.isDarkMode;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF4F7),
+      backgroundColor: _theme.scaffoldColor,
       appBar: AppBar(
-        title: const Text('Browse Catalog', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Browse Catalog',
+          style: TextStyle(fontWeight: FontWeight.bold, color: _theme.textColor),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_alt_off_outlined),
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode_outlined, color: _theme.textColor),
+            tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            onPressed: () => _theme.toggleTheme(),
+          ),
+          IconButton(
+            icon: Icon(Icons.filter_alt_off_outlined, color: _theme.textColor),
             tooltip: 'Clear Filters',
             onPressed: _clearFilters,
           ),
@@ -95,13 +120,14 @@ class _BrowseScreenState extends State<BrowseScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: TextField(
               controller: _searchController,
+              style: TextStyle(color: _theme.textColor),
               decoration: InputDecoration(
                 hintText: 'Search by title, location, description...',
-                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+                hintStyle: TextStyle(color: _theme.subtextColor, fontSize: 13),
                 prefixIcon: const Icon(Icons.search, color: Color(0xFFE8848F)),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, size: 18),
+                        icon: Icon(Icons.clear, size: 18, color: _theme.subtextColor),
                         onPressed: () {
                           _searchController.clear();
                           _fetch();
@@ -109,35 +135,36 @@ class _BrowseScreenState extends State<BrowseScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: _theme.cardColor,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05)),
+                  borderSide: BorderSide(color: isDark ? const Color(0xFF382E48) : Colors.black.withValues(alpha: 0.05)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.05)),
+                  borderSide: BorderSide(color: isDark ? const Color(0xFF382E48) : Colors.black.withValues(alpha: 0.05)),
                 ),
               ),
               onSubmitted: (_) => _fetch(),
             ),
           ),
 
-          // Type Segment Toggle (ALL / LOST / FOUND)
+          // Type Segment Toggle (ALL / LOST / FOUND / CLAIMED) (Requirement A)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _theme.cardColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+              border: Border.all(color: isDark ? const Color(0xFF382E48) : Colors.black.withValues(alpha: 0.05)),
             ),
             child: Row(
               children: [
-                _buildTypeBtn('ALL', 'All Items'),
-                _buildTypeBtn('LOST', 'Lost Only 🔴'),
-                _buildTypeBtn('FOUND', 'Found Only 🟢'),
+                _buildTypeBtn('ALL', 'Active'),
+                _buildTypeBtn('LOST', 'Lost 🔴'),
+                _buildTypeBtn('FOUND', 'Found 🟢'),
+                _buildTypeBtn('CLAIMED', 'Claimed 🤝'),
               ],
             ),
           ),
@@ -159,16 +186,18 @@ class _BrowseScreenState extends State<BrowseScreen> {
                     label: Text(cat['name'] ?? ''),
                     selected: isSelected,
                     selectedColor: const Color(0xFFE8848F),
-                    backgroundColor: Colors.white,
+                    backgroundColor: _theme.cardColor,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : const Color(0xFF3A3040),
+                      color: isSelected ? Colors.white : _theme.textColor,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       fontSize: 12,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                       side: BorderSide(
-                        color: isSelected ? const Color(0xFFE8848F) : Colors.black.withValues(alpha: 0.08),
+                        color: isSelected
+                            ? const Color(0xFFE8848F)
+                            : (isDark ? const Color(0xFF382E48) : Colors.black.withValues(alpha: 0.08)),
                       ),
                     ),
                     onSelected: (val) {
@@ -259,6 +288,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
 
   Widget _buildTypeBtn(String type, String label) {
     final isSelected = _selectedType == type;
+    final isDark = _theme.isDarkMode;
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -275,7 +305,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFF7A6E80),
+              color: isSelected ? Colors.white : (isDark ? Colors.grey.shade400 : const Color(0xFF7A6E80)),
               fontWeight: FontWeight.bold,
               fontSize: 11,
             ),
@@ -292,14 +322,14 @@ class _BrowseScreenState extends State<BrowseScreen> {
         children: [
           const Text('🔍', style: TextStyle(fontSize: 48)),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'No matching items found',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF3A3040)),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _theme.textColor),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Try adjusting your search terms or category filters',
-            style: TextStyle(fontSize: 12, color: Color(0xFF7A6E80)),
+            style: TextStyle(fontSize: 12, color: _theme.subtextColor),
           ),
           const SizedBox(height: 16),
           ElevatedButton(

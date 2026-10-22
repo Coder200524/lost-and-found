@@ -59,18 +59,31 @@ class AuthService extends ChangeNotifier {
 
   // Demo user accounts matching web/prisma/seed.mjs
   static final Map<String, UserModel> demoAccounts = {
-    '60004210045': UserModel(
-      id: 'usr-rahul',
-      sapId: '60004210045',
-      name: 'Rahul Mehta',
-      email: 'rahul@djsce.edu',
+    '60017240146': UserModel(
+      id: 'usr-suruchi',
+      sapId: '60017240146',
+      name: 'Suruchi Makwana',
+      email: 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com',
       role: 'USER',
-      avatar: '👨‍🎓',
-      department: 'Information Technology (Sem 5)',
-      collegeId: '60004210045',
+      avatar: '👩‍💻',
+      department: 'AIML',
+      collegeId: 'A090',
       points: 250,
       badge: 'Campus Hero',
-      token: 'demo-token-rahul',
+      token: 'demo-token-suruchi',
+    ),
+    'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com': UserModel(
+      id: 'usr-suruchi',
+      sapId: '60017240146',
+      name: 'Suruchi Makwana',
+      email: 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com',
+      role: 'USER',
+      avatar: '👩‍💻',
+      department: 'AIML',
+      collegeId: 'A090',
+      points: 250,
+      badge: 'Campus Hero',
+      token: 'demo-token-suruchi',
     ),
     '60004210088': UserModel(
       id: 'usr-priya',
@@ -106,6 +119,16 @@ class AuthService extends ChangeNotifier {
     required String password,
   }) async {
     final cleanId = identifier.trim();
+
+    // Compulsory SVKM Email Suffix check
+    if (cleanId.contains('@') &&
+        !cleanId.toLowerCase().endsWith('@svkmmumbai.onmicrosoft.com') &&
+        !cleanId.toLowerCase().startsWith('admin')) {
+      return {
+        'success': false,
+        'error': 'Compulsory SVKM Email Suffix required: email must end with @svkmmumbai.onmicrosoft.com',
+      };
+    }
 
     try {
       final response = await http.post(

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/item.dart';
 import '../services/api_service.dart';
+import '../services/theme_service.dart';
 import 'chat_screen.dart';
 import 'item_detail_screen.dart';
 
@@ -15,6 +16,7 @@ class SwipeScreen extends StatefulWidget {
 }
 
 class _SwipeScreenState extends State<SwipeScreen> {
+  final _theme = ThemeService();
   String _activeTab = 'FOUND'; // 'FOUND' or 'LOST'
   List<Item> _items = [];
   int _currentIndex = 0;
@@ -26,7 +28,18 @@ class _SwipeScreenState extends State<SwipeScreen> {
   @override
   void initState() {
     super.initState();
+    _theme.addListener(_onThemeChange);
     _loadItems();
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(_onThemeChange);
+    super.dispose();
+  }
+
+  void _onThemeChange() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadItems() async {
@@ -57,11 +70,13 @@ class _SwipeScreenState extends State<SwipeScreen> {
   }
 
   void _showMatchDialog(Item item) {
+    final isDark = _theme.isDarkMode;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: Colors.white,
+        backgroundColor: _theme.cardColor,
         contentPadding: const EdgeInsets.all(24),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -70,21 +85,21 @@ class _SwipeScreenState extends State<SwipeScreen> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: const Color(0xFFC4EAD9),
+                color: isDark ? const Color(0xFF1B3B2F) : const Color(0xFFC4EAD9),
                 shape: BoxShape.circle,
               ),
               child: const Center(child: Text('🎉', style: TextStyle(fontSize: 32))),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'It\'s a Potential Match!',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF3A3040)),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _theme.textColor),
             ),
             const SizedBox(height: 8),
             Text(
               'Could "${item.title}" belong to you?',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF7A6E80)),
+              style: TextStyle(fontSize: 13, color: _theme.subtextColor),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
@@ -136,14 +151,20 @@ class _SwipeScreenState extends State<SwipeScreen> {
     final currentItem = hasCard ? _items[_currentIndex] : null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF4F7),
+      backgroundColor: _theme.scaffoldColor,
       appBar: AppBar(
-        title: const Text('Swipe to Match', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Swipe to Match', style: TextStyle(fontWeight: FontWeight.bold, color: _theme.textColor)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(_theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: _theme.isDarkMode ? Colors.amber : Colors.purple.shade300),
+            tooltip: _theme.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            onPressed: () => _theme.toggleTheme(),
+          ),
+          IconButton(
+            icon: Icon(Icons.refresh, color: _theme.textColor),
             onPressed: _loadItems,
             tooltip: 'Reload Cards',
           ),
@@ -156,9 +177,9 @@ class _SwipeScreenState extends State<SwipeScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _theme.cardColor,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+              border: Border.all(color: _theme.borderColor),
             ),
             child: Row(
               children: [
@@ -180,7 +201,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         'Found Items (Did you lose?)',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: _activeTab == 'FOUND' ? Colors.white : const Color(0xFF7A6E80),
+                          color: _activeTab == 'FOUND' ? Colors.white : _theme.subtextColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -206,7 +227,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         'Lost Items (Did you find?)',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: _activeTab == 'LOST' ? Colors.white : const Color(0xFF7A6E80),
+                          color: _activeTab == 'LOST' ? Colors.white : _theme.subtextColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -298,11 +319,12 @@ class _SwipeScreenState extends State<SwipeScreen> {
   Widget _buildSwipeCard(Item item) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _theme.cardColor,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _theme.borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withValues(alpha: _theme.isDarkMode ? 0.25 : 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -323,7 +345,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                     item.imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
-                      color: const Color(0xFFDDD6F3),
+                      color: _theme.isDarkMode ? const Color(0xFF2A2438) : const Color(0xFFDDD6F3),
                       child: const Center(child: Text('📦', style: TextStyle(fontSize: 64))),
                     ),
                   ),
@@ -428,7 +450,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                   children: [
                     Text(
                       item.title,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF3A3040)),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _theme.textColor),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -436,7 +458,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                     Expanded(
                       child: Text(
                         item.description,
-                        style: const TextStyle(fontSize: 13, color: Color(0xFF7A6E80), height: 1.4),
+                        style: TextStyle(fontSize: 13, color: _theme.subtextColor, height: 1.4),
                         overflow: TextOverflow.fade,
                       ),
                     ),
@@ -446,18 +468,18 @@ class _SwipeScreenState extends State<SwipeScreen> {
                       children: [
                         Text(
                           'Posted by ${item.contactName}',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF9B8BDB)),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _theme.isDarkMode ? const Color(0xFFBDA8F9) : const Color(0xFF9B8BDB)),
                         ),
                         if (item.reward.isNotEmpty)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFDF3C0),
+                              color: _theme.isDarkMode ? const Color(0xFF383214) : const Color(0xFFFDF3C0),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               '⭐ ${item.reward}',
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF8A7A00)),
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _theme.isDarkMode ? const Color(0xFFFFE066) : const Color(0xFF8A7A00)),
                             ),
                           ),
                       ],
@@ -480,7 +502,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: _theme.cardColor,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -492,15 +514,15 @@ class _SwipeScreenState extends State<SwipeScreen> {
             child: const Text('✨', style: TextStyle(fontSize: 48)),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'All Caught Up!',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF3A3040)),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _theme.textColor),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'You have reviewed all current items in this category.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: Color(0xFF7A6E80)),
+            style: TextStyle(fontSize: 13, color: _theme.subtextColor),
           ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
@@ -534,7 +556,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _theme.cardColor,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(

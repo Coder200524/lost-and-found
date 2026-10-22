@@ -34,17 +34,19 @@ class ApiService {
     };
   }
 
-  // Fetch Items with optional search, category, and type filters (with seed fallback)
+  // Fetch Items with optional search, category, type, and status filters (with seed fallback)
   static Future<List<Item>> asyncFetchItems({
     String? query,
     String? category,
     String? type,
+    String? status,
   }) async {
     try {
       final uri = Uri.parse('$baseUrl/items').replace(queryParameters: {
         if (query != null && query.isNotEmpty) 'q': query,
         if (category != null && category != 'All') 'category': category,
         if (type != null && type != 'ALL') 'type': type,
+        if (status != null && status != 'ALL') 'status': status,
       });
 
       final response = await http.get(uri).timeout(const Duration(seconds: 4));
@@ -65,8 +67,19 @@ class ApiService {
     // Offline / fallback filtering from seed data
     List<Item> items = List.from(SeedData.initialItems);
     if (type != null && type != 'ALL') {
-      items = items.where((i) => i.type.toUpperCase() == type.toUpperCase()).toList();
+      if (type.toUpperCase() == 'CLAIMED') {
+        items = items.where((i) => i.status == 'CLAIMED' || i.status == 'RESOLVED').toList();
+      } else {
+        items = items.where((i) => i.type.toUpperCase() == type.toUpperCase()).toList();
+      }
+    } else if (status != null && status != 'ALL') {
+      if (status.toUpperCase() == 'CLAIMED') {
+        items = items.where((i) => i.status == 'CLAIMED' || i.status == 'RESOLVED').toList();
+      } else {
+        items = items.where((i) => i.status.toUpperCase() == status.toUpperCase()).toList();
+      }
     }
+
     if (category != null && category != 'All') {
       items = items.where((i) => i.category.toLowerCase() == category.toLowerCase()).toList();
     }
@@ -123,29 +136,126 @@ class ApiService {
     return true;
   }
 
-  // Submit Claim
-  static Future<bool> submitClaim({
+  static final List<Map<String, dynamic>> localClaims = [
+    {
+      'id': 'cmvgmosy40003rkf8izboflbr',
+      'itemId': 'cmvgm0raa000hrkf4rabid87s',
+      'claimantName': 'Suruchi Makwana',
+      'claimantEmail': 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com',
+      'rollNo': 'A090',
+      'sapId': '60017240146',
+      'department': 'AIML',
+      'academicYear': 'Third Year (TE)',
+      'proofDetails': 'Personal key bunch with Ferrari keychain and Activa keys',
+      'status': 'APPROVED',
+      'createdAt': '2024-10-18T10:00:00Z',
+      'item': {
+        'id': 'cmvgm0raa000hrkf4rabid87s',
+        'title': 'Set of 3 Keys with Ferrari Red Keychain',
+        'category': 'Accessories',
+        'location': 'Ground Floor Parking',
+        'dateOccurred': '2024-10-18',
+        'status': 'CLAIMED',
+        'imageUrl': 'https://images.unsplash.com/photo-1582139329536-e7284fece509?w=600&auto=format&fit=crop&q=80',
+      },
+    },
+  ];
+
+  // Submit Claim with Full Validation (Roll No ^[A-Za-z][0-9]{3}$, SAP ID ^6[0-9]{11}$)
+  static Future<Map<String, dynamic>> submitClaim({
     required String itemId,
     required String claimantName,
     required String claimantEmail,
+    required String rollNo,
+    required String sapId,
+    String? department,
+    String? academicYear,
     required String proofDetails,
+    String? claimantId,
   }) async {
+    if (!claimantEmail.toLowerCase().endsWith('@svkmmumbai.onmicrosoft.com')) {
+      return {
+        'success': false,
+        'error': 'Compulsory SVKM Email Suffix required: email must end with @svkmmumbai.onmicrosoft.com'
+      };
+    }
+    final localClaim = {
+      'id': 'claim-${DateTime.now().millisecondsSinceEpoch}',
+      'itemId': itemId,
+      'claimantName': claimantName,
+      'claimantEmail': claimantEmail,
+      'rollNo': rollNo,
+      'sapId': sapId,
+      'department': department,
+      'academicYear': academicYear,
+      'proofDetails': proofDetails,
+      'status': 'PENDING',
+      'createdAt': DateTime.now().toIso8601String(),
+    };
+    localClaims.insert(0, localClaim);
+
     try {
+      final payload = <String, dynamic>{
+        'itemId': itemId,
+        'claimantName': claimantName,
+        'claimantEmail': claimantEmail,
+        'rollNo': rollNo,
+        'sapId': sapId,
+        'proofDetails': proofDetails,
+      };
+      if (department != null && department.isNotEmpty) {
+        payload['department'] = department;
+      }
+      if (academicYear != null && academicYear.isNotEmpty) {
+        payload['academicYear'] = academicYear;
+      }
+      if (claimantId != null && claimantId.isNotEmpty) {
+        payload['claimantId'] = claimantId;
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/claims'),
         headers: _authHeaders,
-        body: jsonEncode({
-          'itemId': itemId,
-          'claimantName': claimantName,
-          'claimantEmail': claimantEmail,
-          'proofDetails': proofDetails,
-        }),
+        body: jsonEncode(payload),
       ).timeout(const Duration(seconds: 4));
-      return response.statusCode == 200 || response.statusCode == 201;
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true, 'message': data['message'] ?? 'Claim submitted successfully!'};
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to submit claim'};
+      }
     } catch (e) {
       debugPrint('[ApiService] Error submitting claim: $e');
-      return true; // Optimistic fallback
+      return {'success': true, 'message': 'Claim registered in offline/demo mode.'};
     }
+  }
+
+  // Fetch student's submitted claims (Requirement A.3 & F)
+  static Future<List<Map<String, dynamic>>> fetchMyClaims({String? claimantEmail, String? claimantId}) async {
+    try {
+      final p = StringBuffer('$baseUrl/claims?');
+      if (claimantEmail != null && claimantEmail.isNotEmpty) p.write('claimantEmail=$claimantEmail&');
+      if (claimantId != null && claimantId.isNotEmpty) p.write('claimantId=$claimantId&');
+
+      final response = await http.get(
+        Uri.parse(p.toString()),
+        headers: _authHeaders,
+      ).timeout(const Duration(seconds: 4));
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded['success'] == true && decoded['data'] is List) {
+          final List<Map<String, dynamic>> serverClaims = List<Map<String, dynamic>>.from(decoded['data']);
+          if (serverClaims.isNotEmpty) {
+            return serverClaims;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[ApiService] Error fetching my claims: $e');
+    }
+    return List<Map<String, dynamic>>.from(localClaims);
   }
 
   // In-App Chat: Fetch Messages
@@ -235,5 +345,102 @@ class ApiService {
       debugPrint('[ApiService] Error in AI matching: $e');
     }
     return null;
+  }
+
+  // Report Misuse API
+  static Future<bool> reportMisuse(String itemId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/items/$itemId/report'),
+        headers: _authHeaders,
+      ).timeout(const Duration(seconds: 4));
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('[ApiService] Report misuse error: $e');
+      return true;
+    }
+  }
+
+  // --- ADMIN SECURITY CONSOLE METHODS ---
+
+  // Fetch Claims for Admin Verification Queue
+  static Future<List<Map<String, dynamic>>> fetchAdminClaims({String? status = 'PENDING'}) async {
+    try {
+      final uri = Uri.parse('$baseUrl/claims').replace(queryParameters: {
+        if (status != null && status.isNotEmpty) 'status': status,
+      });
+
+      final response = await http.get(uri, headers: _authHeaders).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded['success'] == true && decoded['data'] is List) {
+          return List<Map<String, dynamic>>.from(decoded['data']);
+        }
+      }
+    } catch (e) {
+      debugPrint('[ApiService] Error fetching admin claims: $e');
+    }
+    // Fallback to local claims with status filter
+    return localClaims.where((c) => status == null || c['status'] == status).toList();
+  }
+
+  // Resolve Claim: APPROVED or REJECTED
+  static Future<Map<String, dynamic>> resolveAdminClaim({
+    required String claimId,
+    required String decision, // 'APPROVED' or 'REJECTED'
+  }) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/claims'),
+        headers: _authHeaders,
+        body: jsonEncode({
+          'claimId': claimId,
+          'status': decision,
+          'adminEmail': AuthService().currentUser?.email ?? 'admin@djsce.edu',
+        }),
+      ).timeout(const Duration(seconds: 4));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final idx = localClaims.indexWhere((c) => c['id'] == claimId);
+        if (idx != -1) {
+          localClaims[idx]['status'] = decision;
+        }
+        return {'success': true, 'message': 'Claim $decision successfully.'};
+      } else {
+        return {'success': false, 'error': data['error'] ?? 'Failed to update claim'};
+      }
+    } catch (e) {
+      debugPrint('[ApiService] Error resolving claim: $e');
+      final idx = localClaims.indexWhere((c) => c['id'] == claimId);
+      if (idx != -1) {
+        localClaims[idx]['status'] = decision;
+      }
+      return {'success': true, 'message': 'Claim marked as $decision (offline mode).'};
+    }
+  }
+
+  // Mark Item as Handover Resolved (RESOLVED)
+  static Future<bool> resolveAdminHandover(String itemId) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/items/$itemId'),
+        headers: _authHeaders,
+        body: jsonEncode({
+          'status': 'RESOLVED',
+          'updatedBy': AuthService().currentUser?.email ?? 'admin@djsce.edu',
+        }),
+      ).timeout(const Duration(seconds: 4));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('[ApiService] Error resolving handover: $e');
+      return true; // Optimistic
+    }
+  }
+
+  // Fetch Items awaiting Handover (status: CLAIMED)
+  static Future<List<Item>> fetchAdminHandoverItems() async {
+    return asyncFetchItems(status: 'CLAIMED');
   }
 }

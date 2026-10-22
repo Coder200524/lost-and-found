@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/item.dart';
 import '../services/api_service.dart';
 import '../services/gemini_service.dart';
+import '../services/theme_service.dart';
 
 class PostItemScreen extends StatefulWidget {
   final VoidCallback? onItemPosted;
@@ -14,7 +15,24 @@ class PostItemScreen extends StatefulWidget {
 }
 
 class _PostItemScreenState extends State<PostItemScreen> {
+  final _theme = ThemeService();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _theme.addListener(_onThemeChange);
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(_onThemeChange);
+    super.dispose();
+  }
+
+  void _onThemeChange() {
+    if (mounted) setState(() {});
+  }
 
   String _type = 'LOST';
   String _category = 'Electronics';
@@ -24,8 +42,8 @@ class _PostItemScreenState extends State<PostItemScreen> {
   final _dateCtrl = TextEditingController(text: DateTime.now().toString().split(' ')[0]);
   final _imageCtrl = TextEditingController();
   final _rewardCtrl = TextEditingController();
-  final _nameCtrl = TextEditingController(text: 'Rahul Mehta');
-  final _emailCtrl = TextEditingController(text: 'rahul@djsce.edu');
+  final _nameCtrl = TextEditingController(text: 'Suruchi Makwana');
+  final _emailCtrl = TextEditingController(text: 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com');
   final _phoneCtrl = TextEditingController(text: '+91 98765 43210');
 
   bool _submitting = false;
@@ -64,6 +82,17 @@ class _PostItemScreenState extends State<PostItemScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final email = _emailCtrl.text.trim();
+    if (!email.toLowerCase().endsWith('@svkmmumbai.onmicrosoft.com') && !email.toLowerCase().startsWith('admin')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Compulsory SVKM Email Suffix required: email must end with @svkmmumbai.onmicrosoft.com'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
 
     // Mindmap Rule: "Post Found Item: MANDATORY IMAGE!"
     if (_type == 'FOUND' && _imageCtrl.text.trim().isEmpty) {
@@ -132,11 +161,20 @@ class _PostItemScreenState extends State<PostItemScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: _theme.scaffoldColor,
       appBar: AppBar(
-        title: const Text('Report Item', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: Colors.white,
+        title: Text('Report Item', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: _theme.textColor)),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: _theme.textColor),
+        actions: [
+          IconButton(
+            icon: Icon(_theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: _theme.isDarkMode ? Colors.amber : Colors.purple.shade300),
+            tooltip: _theme.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            onPressed: () => _theme.toggleTheme(),
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -149,24 +187,46 @@ class _PostItemScreenState extends State<PostItemScreen> {
                 Expanded(
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: _type == 'LOST' ? const Color(0xFFFDE8EA) : Colors.white,
-                      side: BorderSide(color: _type == 'LOST' ? const Color(0xFFD9485E) : Colors.grey.shade300),
+                      backgroundColor: _type == 'LOST'
+                          ? (_theme.isDarkMode ? const Color(0xFF38151B) : const Color(0xFFFDE8EA))
+                          : _theme.cardColor,
+                      side: BorderSide(
+                        color: _type == 'LOST' ? const Color(0xFFD9485E) : _theme.borderColor,
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: () => setState(() => _type = 'LOST'),
-                    child: Text('🔴 I Lost Something', style: TextStyle(color: _type == 'LOST' ? const Color(0xFFD9485E) : Colors.grey.shade700, fontWeight: FontWeight.bold, fontSize: 12)),
+                    child: Text(
+                      '🔴 I Lost Something',
+                      style: TextStyle(
+                        color: _type == 'LOST' ? const Color(0xFFD9485E) : _theme.subtextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: _type == 'FOUND' ? const Color(0xFFE6F7EF) : Colors.white,
-                      side: BorderSide(color: _type == 'FOUND' ? const Color(0xFF2B9365) : Colors.grey.shade300),
+                      backgroundColor: _type == 'FOUND'
+                          ? (_theme.isDarkMode ? const Color(0xFF133324) : const Color(0xFFE6F7EF))
+                          : _theme.cardColor,
+                      side: BorderSide(
+                        color: _type == 'FOUND' ? const Color(0xFF2B9365) : _theme.borderColor,
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: () => setState(() => _type = 'FOUND'),
-                    child: Text('🟢 I Found Something', style: TextStyle(color: _type == 'FOUND' ? const Color(0xFF2B9365) : Colors.grey.shade700, fontWeight: FontWeight.bold, fontSize: 12)),
+                    child: Text(
+                      '🟢 I Found Something',
+                      style: TextStyle(
+                        color: _type == 'FOUND' ? const Color(0xFF2B9365) : _theme.subtextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -201,8 +261,11 @@ class _PostItemScreenState extends State<PostItemScreen> {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: _triggerGeminiAutoDetect,
-                icon: const Icon(Icons.auto_awesome, size: 16, color: Color(0xFF6D28D9)),
-                label: const Text('Gemini: Auto-Detect Category', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6D28D9))),
+                icon: const Icon(Icons.auto_awesome, size: 16, color: Color(0xFF9B8BDB)),
+                label: const Text(
+                  'Gemini: Auto-Detect Category',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF9B8BDB)),
+                ),
               ),
             ),
 
@@ -211,8 +274,14 @@ class _PostItemScreenState extends State<PostItemScreen> {
             // Category & Location
             DropdownButtonFormField<String>(
               initialValue: _category,
+              dropdownColor: _theme.cardColor,
               decoration: const InputDecoration(labelText: 'Category *', border: OutlineInputBorder(), isDense: true),
-              items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+              items: _categories
+                  .map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(c, style: TextStyle(color: _theme.textColor)),
+                      ))
+                  .toList(),
               onChanged: (val) => setState(() => _category = val ?? 'Electronics'),
             ),
             const SizedBox(height: 12),

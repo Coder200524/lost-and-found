@@ -2,8 +2,11 @@
 import 'package:flutter/material.dart';
 import '../models/item.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
+import '../services/theme_service.dart';
 import '../widgets/item_card.dart';
 import 'item_detail_screen.dart';
+import 'admin_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int) onNavigateTab;
@@ -15,13 +18,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final _theme = ThemeService();
   List<Item> _recentItems = [];
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
+    _theme.addListener(_onThemeChange);
     _loadRecent();
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(_onThemeChange);
+    super.dispose();
+  }
+
+  void _onThemeChange() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadRecent() async {
@@ -37,10 +52,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = _theme.isDarkMode;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF4F7),
+      backgroundColor: _theme.scaffoldColor,
       appBar: AppBar(
-        backgroundColor: Colors.white.withValues(alpha: 0.9),
+        backgroundColor: _theme.surfaceColor.withValues(alpha: 0.9),
         elevation: 0,
         title: Row(
           children: [
@@ -66,19 +83,35 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFFDF3C0),
+                color: isDark ? const Color(0xFF3E3514) : const Color(0xFFFDF3C0),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text(
+              child: Text(
                 'DJSCE',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF8B6E00)),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? const Color(0xFFFDE884) : const Color(0xFF8B6E00),
+                ),
               ),
             ),
           ],
         ),
         actions: [
+          if (AuthService().currentUser?.role == 'ADMIN')
+            IconButton(
+              icon: const Icon(Icons.admin_panel_settings, color: Color(0xFFE8848F)),
+              tooltip: 'Admin Security Console',
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminScreen())),
+            ),
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.grey),
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode_outlined, color: _theme.textColor),
+            tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            onPressed: () => _theme.toggleTheme(),
+          ),
+          IconButton(
+            icon: Icon(Icons.refresh, color: _theme.textColor),
+            tooltip: 'Refresh items',
             onPressed: _loadRecent,
           ),
         ],
@@ -95,18 +128,18 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Campus Lost & Found',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF2D3748),
+                      color: _theme.textColor,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Reunite with your belongings using Gemini AI and student collaboration.',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 13, color: _theme.subtextColor),
                   ),
                 ],
               ),
@@ -209,9 +242,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Recently Reported',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: _theme.textColor),
                   ),
                   TextButton(
                     onPressed: () => widget.onNavigateTab(1), // Browse tab
@@ -233,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.all(32),
                 child: Center(
-                  child: Text('No items reported yet.', style: TextStyle(color: Colors.grey.shade500)),
+                  child: Text('No items reported yet.', style: TextStyle(color: _theme.subtextColor)),
                 ),
               )
             else
@@ -257,19 +290,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatTile(String value, String label, Color bg, Color text) {
+    final isDark = _theme.isDarkMode;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         decoration: BoxDecoration(
-          color: bg.withValues(alpha: 0.5),
+          color: isDark ? const Color(0xFF221A2E) : bg.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: bg),
+          border: Border.all(color: isDark ? const Color(0xFF382E48) : bg),
         ),
         child: Column(
           children: [
             Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: text)),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+              ),
+            ),
           ],
         ),
       ),

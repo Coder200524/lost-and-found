@@ -8,6 +8,7 @@ import 'screens/profile_screen.dart';
 import 'screens/post_item_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
+import 'services/theme_service.dart';
 
 void main() {
   runApp(const FinDoraApp());
@@ -18,33 +19,63 @@ class FinDoraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Findora',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFE8848F),
-          primary: const Color(0xFFE8848F),
-          secondary: const Color(0xFF9B8BDB),
-          surface: Colors.white,
-        ),
-        scaffoldBackgroundColor: const Color(0xFFFEF4F7),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Color(0xFF2D3748),
-          elevation: 0,
-        ),
-      ),
-      home: ListenableBuilder(
-        listenable: AuthService(),
-        builder: (context, _) {
-          if (!AuthService().isLoggedIn) {
-            return const LoginScreen();
-          }
-          return const MainNavigationScreen();
-        },
-      ),
+    final themeService = ThemeService();
+
+    return ListenableBuilder(
+      listenable: themeService,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Findora',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeService.themeMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.light,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFFE8848F),
+              brightness: Brightness.light,
+              primary: const Color(0xFFE8848F),
+              secondary: const Color(0xFF9B8BDB),
+              surface: Colors.white,
+            ),
+            scaffoldBackgroundColor: const Color(0xFFFEF4F7),
+            cardColor: Colors.white,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.white,
+              foregroundColor: Color(0xFF2D3748),
+              elevation: 0,
+            ),
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFFE8848F),
+              brightness: Brightness.dark,
+              primary: const Color(0xFFF78DA7),
+              secondary: const Color(0xFFBDA8F9),
+              surface: const Color(0xFF1E1A29),
+              onSurface: const Color(0xFFF5F2F7),
+            ),
+            scaffoldBackgroundColor: const Color(0xFF130F1A),
+            cardColor: const Color(0xFF1E1A29),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF1E1A29),
+              foregroundColor: Color(0xFFF5F2F7),
+              elevation: 0,
+            ),
+          ),
+          home: ListenableBuilder(
+            listenable: AuthService(),
+            builder: (context, _) {
+              if (!AuthService().isLoggedIn) {
+                return const LoginScreen();
+              }
+              return const MainNavigationScreen();
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -65,6 +96,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeService = ThemeService();
+    final isDark = themeService.isDarkMode;
+
     final screens = [
       HomeScreen(onNavigateTab: _switchTab),
       const BrowseScreen(),
@@ -74,6 +108,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ];
 
     return Scaffold(
+      backgroundColor: themeService.scaffoldColor,
       body: IndexedStack(
         index: _currentIndex,
         children: screens,
@@ -94,10 +129,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: themeService.surfaceColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -107,9 +142,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           currentIndex: _currentIndex,
           onTap: _switchTab,
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
+          backgroundColor: themeService.surfaceColor,
           selectedItemColor: const Color(0xFFE8848F),
-          unselectedItemColor: Colors.grey.shade400,
+          unselectedItemColor: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
           unselectedLabelStyle: const TextStyle(fontSize: 10),
           elevation: 0,

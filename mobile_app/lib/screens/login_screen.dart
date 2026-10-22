@@ -1,6 +1,7 @@
 // SVKM Student Login Screen for FinDora Mobile App
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/theme_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback? onLoginSuccess;
@@ -11,11 +12,30 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _idController = TextEditingController(text: '60004210045');
+  final _theme = ThemeService();
+  final _idController = TextEditingController(text: '60017240146');
   final _passwordController = TextEditingController(text: 'student123');
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _theme.addListener(_onThemeChange);
+  }
+
+  @override
+  void dispose() {
+    _theme.removeListener(_onThemeChange);
+    _idController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _onThemeChange() {
+    if (mounted) setState(() {});
+  }
 
   Future<void> _handleLogin() async {
     final id = _idController.text.trim();
@@ -23,6 +43,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (id.isEmpty || pwd.isEmpty) {
       setState(() => _errorMessage = 'Please enter SAP ID / Email and password.');
+      return;
+    }
+
+    if (id.contains('@') &&
+        !id.toLowerCase().endsWith('@svkmmumbai.onmicrosoft.com') &&
+        !id.toLowerCase().startsWith('admin')) {
+      setState(() => _errorMessage = 'Compulsory SVKM Email Suffix required: email must end with @svkmmumbai.onmicrosoft.com');
       return;
     }
 
@@ -61,11 +88,20 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF4F7),
+      backgroundColor: _theme.scaffoldColor,
       appBar: AppBar(
-        title: const Text('SVKM Student Login', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('SVKM Student Login', style: TextStyle(fontWeight: FontWeight.bold, color: _theme.textColor)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: _theme.textColor),
+        actions: [
+          IconButton(
+            icon: Icon(_theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: _theme.isDarkMode ? Colors.amber : Colors.purple.shade300),
+            tooltip: _theme.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            onPressed: () => _theme.toggleTheme(),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -99,16 +135,16 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Welcome to Findora',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF3A3040)),
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: _theme.textColor),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Sign in using your SVKM SAP ID or College credentials',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Color(0xFF7A6E80)),
+              style: TextStyle(fontSize: 13, color: _theme.subtextColor),
             ),
             const SizedBox(height: 28),
 
@@ -116,11 +152,12 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: _theme.cardColor,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: _theme.borderColor),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: _theme.isDarkMode ? 0.25 : 0.05),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -134,60 +171,64 @@ class _LoginScreenState extends State<LoginScreen> {
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade50,
+                        color: _theme.isDarkMode ? const Color(0xFF38151B) : Colors.red.shade50,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.red.shade200),
+                        border: Border.all(color: Colors.red.shade400),
                       ),
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                        style: TextStyle(color: Colors.red.shade300, fontSize: 13),
                       ),
                     ),
 
                   // SAP ID / Email Input
-                  const Text('SVKM SAP ID or College Email', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  Text('SVKM SAP ID or College Email', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: _theme.textColor)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _idController,
+                    style: TextStyle(color: _theme.textColor),
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFFE8848F)),
-                      hintText: 'e.g. 60004210045 or name@djsce.edu',
+                      hintText: 'e.g. 60017240146 or SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com',
+                      hintStyle: TextStyle(color: _theme.subtextColor.withValues(alpha: 0.7)),
                       filled: true,
-                      fillColor: const Color(0xFFFBF8FA),
+                      fillColor: _theme.surfaceAltColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
+                        borderSide: BorderSide(color: _theme.borderColor),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
+                        borderSide: BorderSide(color: _theme.borderColor),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
 
                   // Password Input
-                  const Text('Password', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  Text('Password', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: _theme.textColor)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    style: TextStyle(color: _theme.textColor),
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFE8848F)),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: _theme.subtextColor),
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                       hintText: 'Enter password',
+                      hintStyle: TextStyle(color: _theme.subtextColor.withValues(alpha: 0.7)),
                       filled: true,
-                      fillColor: const Color(0xFFFBF8FA),
+                      fillColor: _theme.surfaceAltColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
+                        borderSide: BorderSide(color: _theme.borderColor),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade200),
+                        borderSide: BorderSide(color: _theme.borderColor),
                       ),
                     ),
                   ),
@@ -213,10 +254,10 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 28),
 
             // Demo Accounts Chips
-            const Text(
+            Text(
               '⚡ Quick Demo Sign In (1-Tap):',
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF7A6E80)),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _theme.subtextColor),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -225,21 +266,24 @@ class _LoginScreenState extends State<LoginScreen> {
               runSpacing: 8,
               children: [
                 ActionChip(
-                  avatar: const Text('👨‍🎓'),
-                  label: const Text('Rahul (Student)'),
-                  backgroundColor: Colors.white,
-                  onPressed: () => _quickFill('60004210045', 'student123'),
+                  avatar: const Text('👩‍💻'),
+                  label: Text('Suruchi (Student)', style: TextStyle(color: _theme.textColor)),
+                  backgroundColor: _theme.cardColor,
+                  side: BorderSide(color: _theme.borderColor),
+                  onPressed: () => _quickFill('60017240146', 'student123'),
                 ),
                 ActionChip(
                   avatar: const Text('👩‍🎓'),
-                  label: const Text('Priya (Student)'),
-                  backgroundColor: Colors.white,
+                  label: Text('Priya (Student)', style: TextStyle(color: _theme.textColor)),
+                  backgroundColor: _theme.cardColor,
+                  side: BorderSide(color: _theme.borderColor),
                   onPressed: () => _quickFill('60004210088', 'student123'),
                 ),
                 ActionChip(
                   avatar: const Text('🛡️'),
-                  label: const Text('Admin Sharma'),
-                  backgroundColor: Colors.white,
+                  label: Text('Admin Sharma', style: TextStyle(color: _theme.textColor)),
+                  backgroundColor: _theme.cardColor,
+                  side: BorderSide(color: _theme.borderColor),
                   onPressed: () => _quickFill('ADMIN-001', 'admin123'),
                 ),
               ],
@@ -254,11 +298,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.pop(context);
                   }
                 },
-                icon: const Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF7A6E80)),
-                label: const Text(
+                icon: Icon(Icons.arrow_forward_rounded, size: 16, color: _theme.subtextColor),
+                label: Text(
                   'Continue as Guest Explorer →',
                   style: TextStyle(
-                    color: Color(0xFF7A6E80),
+                    color: _theme.subtextColor,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
