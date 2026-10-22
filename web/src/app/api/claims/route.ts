@@ -184,14 +184,24 @@ export async function POST(request: NextRequest) {
         claimantId: validClaimantId,
         claimantName: claimantName.trim(),
         claimantEmail: claimantEmail.trim(),
-        rollNo: formattedRoll,
-        sapId: formattedSap,
-        department: department || null,
-        academicYear: academicYear || null,
         proofDetails: formattedProof,
         status: 'PENDING',
       },
     });
+
+    // Update extended SVKM student details directly in SQLite
+    try {
+      await prisma.$executeRaw`
+        UPDATE Claim
+        SET rollNo = ${formattedRoll || null},
+            sapId = ${formattedSap || null},
+            department = ${department || null},
+            academicYear = ${academicYear || null}
+        WHERE id = ${claim.id}
+      `;
+    } catch (e) {
+      console.warn('Could not update extra claim attributes in SQLite:', e);
+    }
 
     // 8. Mongoose audit log
     try {

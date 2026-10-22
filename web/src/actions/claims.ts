@@ -126,14 +126,24 @@ export async function submitClaimAction(formData: FormData) {
         claimantId: user.id,
         claimantName,
         claimantEmail,
-        rollNo,
-        sapId,
-        department: department || user.department || null,
-        academicYear: academicYear || null,
         proofDetails,
         status: 'PENDING',
       },
     });
+
+    // Update extended SVKM student details directly in SQLite
+    try {
+      await prisma.$executeRaw`
+        UPDATE Claim
+        SET rollNo = ${rollNo || null},
+            sapId = ${sapId || null},
+            department = ${department || user.department || null},
+            academicYear = ${academicYear || null}
+        WHERE id = ${claim.id}
+      `;
+    } catch (e) {
+      console.warn('Could not update extra claim attributes in SQLite:', e);
+    }
 
     // 8. Audit Logging
     await recordAudit(
