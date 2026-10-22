@@ -16,15 +16,20 @@ export async function createItemAction(formData: FormData) {
     const category = formData.get('category') as string;
     const type = formData.get('type') as string;
     const location = formData.get('location') as string;
-    const dateOccurred = (formData.get('dateOccurred') as string) || new Date().toISOString().split('T')[0];
+    const dateOccurred = (formData.get('dateOccurred') as string) || (formData.get('date') as string) || new Date().toISOString().split('T')[0];
     const imageUrl = (formData.get('imageUrl') as string) || '';
     const reward = (formData.get('reward') as string) || '';
-    const contactName = (formData.get('contactName') as string) || (user?.name ?? 'Anonymous Student');
-    const contactEmail = (formData.get('contactEmail') as string) || (user?.email ?? 'student@djsce.edu');
+    const contactName = (formData.get('contactName') as string) || (user?.name ?? 'Suruchi Makwana');
+    const rawContactEmail = (formData.get('contactEmail') as string) || (user?.email ?? 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com');
+    const contactEmail = rawContactEmail.trim();
     const contactPhone = (formData.get('contactPhone') as string) || '';
 
     if (!title || !description || !category || !type || !location) {
       return { success: false, error: 'Please fill in all mandatory fields.' };
+    }
+
+    if (contactEmail && !contactEmail.toLowerCase().endsWith('@svkmmumbai.onmicrosoft.com') && !contactEmail.toLowerCase().startsWith('admin')) {
+      return { success: false, error: 'Compulsory SVKM Email Suffix: Email must end with @svkmmumbai.onmicrosoft.com' };
     }
 
     // Mindmap Rule: "Post Found Item: MANDATORY IMAGE!"
@@ -112,3 +117,40 @@ export async function updateItemStatusAction(itemId: string, newStatus: string) 
     return { success: false, error: 'Status update failed' };
   }
 }
+
+export async function moderateReportedItemAction(itemId: string, decision: 'DISMISS' | 'CLOSE') {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: 'Only administrators can moderate reported items.' };
+    }
+
+    if (decision === 'DISMISS') {
+      await prisma.item.update({
+        where: { id: itemId },
+        data: { reportsCount: 0 },
+      });
+    } else {
+      await prisma.item.update({
+        where: { id: itemId },
+        data: { status: 'CLOSED', reportsCount: 0 },
+      });
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/browse');
+    revalidatePath(`/items/${itemId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error moderating item:', error);
+    return { success: false, error: 'Failed to moderate item.' };
+  }
+}
+
+export async function moderateReportedItemFormAction(formData: FormData): Promise<void> {
+  const itemId = formData.get('itemId') as string;
+  const decision = formData.get('decision') as 'DISMISS' | 'CLOSE';
+  await moderateReportedItemAction(itemId, decision);
+}
+

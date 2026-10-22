@@ -36,14 +36,14 @@ async function main() {
 
   const studentRahul = await prisma.user.create({
     data: {
-      name: 'Rahul Mehta',
-      email: 'rahul@djsce.edu',
-      sapId: '60004210045',
+      name: 'Suruchi Makwana',
+      email: 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com',
+      sapId: '60017240146',
       passwordHash: hashedStudent,
       role: 'USER',
-      avatar: '👨‍🎓',
-      department: 'Information Technology (Semester 5)',
-      collegeId: '60004210045',
+      avatar: '👩‍💻',
+      department: 'AIML',
+      collegeId: 'A090',
       phone: '+91 98765 43210',
       points: 250,
       badge: 'Campus Hero',

@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import ClaimForm from '@/components/ClaimForm';
+import ReportMisuseButton from '@/components/ReportMisuseButton';
 
 interface ItemPageProps {
   params: Promise<{ id: string }>;
@@ -42,7 +43,9 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
     where: { id },
     include: {
       user: true,
-      claims: true,
+      claims: {
+        orderBy: { createdAt: 'desc' },
+      },
     },
   });
 
@@ -50,148 +53,306 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
     notFound();
   }
 
-  return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-      {/* Back button */}
-      <Link
-        href="/browse"
-        className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-pink-600 mb-6 transition"
-      >
-        ← Back to Browse
-      </Link>
+  const existingUserClaim = item.claims.find(
+    (c) =>
+      c.claimantId === currentUser.id ||
+      c.claimantEmail.toLowerCase() === currentUser.email.toLowerCase()
+  );
 
-      <div className="glass-card overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Image */}
-          <div className="bg-slate-100 flex items-center justify-center relative min-h-[320px]">
-            {item.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                className="w-full h-full object-cover max-h-[460px]"
-              />
-            ) : (
-              <div className="text-7xl">📦</div>
-            )}
-            <div className="absolute top-4 left-4">
+  return (
+    <div className="item-detail-wrap">
+      {/* Top Navigation */}
+      <div className="item-detail-nav">
+        <Link href="/browse" className="item-detail-back">
+          <span>←</span> Back to Browse
+        </Link>
+        <ReportMisuseButton itemId={item.id} />
+      </div>
+
+      <div className="item-detail-card">
+        {/* Left Column: Image or Visual Media */}
+        <div className="item-detail-media">
+          {item.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.imageUrl}
+              alt={item.title}
+            />
+          ) : (
+            <div className="item-detail-placeholder">
+              {item.category === 'Electronics'
+                ? '📱'
+                : item.category === 'ID Cards'
+                ? '🪪'
+                : item.category === 'Bags'
+                ? '🎒'
+                : item.category === 'Water Bottles'
+                ? '🍶'
+                : item.category === 'Accessories'
+                ? '⌚'
+                : '📦'}
+            </div>
+          )}
+          <div className="item-detail-badge-float">
+            <span
+              className={`item-type-badge ${
+                item.type === 'LOST' ? 'badge-lost' : 'badge-found'
+              }`}
+            >
+              {item.type}
+            </span>
+          </div>
+        </div>
+
+        {/* Right Column: Details & Claim Action */}
+        <div className="item-detail-content">
+          <div className="item-detail-topline">
+            <span className="item-cat-tag">
+              📁 {item.category}
+            </span>
+            <span
+              className={`item-type-badge ${
+                item.status === 'RESOLVED'
+                  ? 'badge-resolved'
+                  : item.status === 'CLAIMED'
+                  ? 'badge-claimed'
+                  : 'badge-found'
+              }`}
+              style={{ position: 'static' }}
+            >
+              Status: {item.status}
+            </span>
+          </div>
+
+          <h1 className="item-detail-heading">
+            {item.title}
+          </h1>
+
+          <p className="item-detail-desc">
+            {item.description}
+          </p>
+
+          {item.reward && (
+            <div
+              style={{
+                padding: '12px 16px',
+                borderRadius: '12px',
+                background: 'rgba(253, 243, 192, 0.4)',
+                border: '1.5px solid #e8db9a',
+                color: '#8a7a00',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <span>🎁</span> Reward Offered: {item.reward}
+            </div>
+          )}
+
+          {/* Hotspot & Privacy Badges (SVKM Mindmap) */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {item.isHotspot && (
               <span
-                className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full shadow-sm ${
-                  item.type === 'LOST' ? 'badge-lost' : 'badge-found'
-                }`}
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  padding: '5px 12px',
+                  borderRadius: '50px',
+                  background: 'rgba(255, 180, 150, 0.3)',
+                  border: '1px solid rgba(255, 180, 150, 0.8)',
+                  color: '#9c4500',
+                }}
               >
-                {item.type}
+                🔥 Hotspot Incident Zone
+              </span>
+            )}
+            {item.isMasked && (
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  padding: '5px 12px',
+                  borderRadius: '50px',
+                  background: 'var(--lavender)',
+                  border: '1px solid var(--lav-d)',
+                  color: 'var(--lav-d)',
+                }}
+              >
+                🆔 Sensitive ID Info Masked for Student Privacy
+              </span>
+            )}
+            {item.isUrgent && (
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  padding: '5px 12px',
+                  borderRadius: '50px',
+                  background: 'var(--rose)',
+                  border: '1px solid var(--rose-d)',
+                  color: 'var(--rose-d)',
+                }}
+              >
+                🚨 Urgent Lost Alert
+              </span>
+            )}
+          </div>
+
+          {/* Attributes List */}
+          <div className="item-detail-meta-list">
+            <div className="item-meta-entry">
+              <span className="item-meta-k">Campus Location:</span>
+              <span className="item-meta-v">📍 {item.location}</span>
+            </div>
+            <div className="item-meta-entry">
+              <span className="item-meta-k">Date Reported:</span>
+              <span className="item-meta-v">🗓️ {item.dateOccurred}</span>
+            </div>
+            <div className="item-meta-entry">
+              <span className="item-meta-k">Reported By:</span>
+              <span className="item-meta-v">
+                {item.contactName} ({item.user?.department || 'Student'})
+              </span>
+            </div>
+            <div
+              className="item-meta-entry"
+              style={{
+                marginTop: '4px',
+                paddingTop: '8px',
+                borderTop: '1px dashed rgba(0, 0, 0, 0.08)',
+              }}
+            >
+              <span className="item-meta-k">Contact Privacy:</span>
+              <span
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: 'var(--rose-d)',
+                }}
+              >
+                🔒 Phone/Email Protected (Hidden from Public)
               </span>
             </div>
           </div>
 
-          {/* Details */}
-          <div className="p-6 sm:p-8 flex flex-col justify-between gap-6">
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-purple-50 text-purple-700">
-                  📁 {item.category}
-                </span>
-                <span
-                  className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                    item.status === 'RESOLVED'
-                      ? 'badge-resolved'
-                      : item.status === 'CLAIMED'
-                      ? 'badge-claimed'
-                      : 'badge-found'
-                  }`}
-                >
-                  Status: {item.status}
-                </span>
-              </div>
+          {/* SVKM Handover Safety Protocol */}
+          <div className="item-safety-protocol">
+            <div className="item-safety-title">
+              <span>🛡️</span> SVKM Handover Safety Protocol:
+            </div>
+            <p className="item-safety-text">
+              Always meet at the Ground Floor Security Desk or Central Library reception. Verify proof of ownership before releasing items.
+            </p>
+          </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-3">
-                {item.title}
-              </h1>
-
-              <p className="text-sm text-slate-600 leading-relaxed mb-6 whitespace-pre-line">
-                {item.description}
-              </p>
-
-              {item.reward && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-2 mb-4">
-                  <span>🎁</span> Reward Offered: {item.reward}
-                </div>
-              )}
-
-              {/* Hotspot & Privacy Badges (SVKM Mindmap) */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {item.isHotspot && (
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
-                    🔥 Hotspot Zone (High Loss Area)
-                  </span>
-                )}
-                {item.isMasked && (
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-                    🆔 Sensitive ID Details Masked for Security
-                  </span>
-                )}
-                {item.isUrgent && (
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-200 animate-pulse">
-                    🚨 Urgent Campus Lost Alert
-                  </span>
-                )}
-              </div>
-
-              {/* Attributes table - Privacy Preserving */}
-              <div className="flex flex-col gap-2.5 text-xs text-slate-600 border-t border-b border-pink-100/80 py-4 my-2">
-                <div className="flex justify-between">
-                  <span className="font-semibold text-slate-400">Campus Location:</span>
-                  <span className="font-medium text-slate-800">📍 {item.location}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-semibold text-slate-400">Date Reported:</span>
-                  <span className="font-medium text-slate-800">📅 {item.dateOccurred}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-semibold text-slate-400">Reported By:</span>
-                  <span className="font-medium text-slate-800">
-                    {item.contactName} ({item.user?.department || 'Student'})
-                  </span>
-                </div>
-                {/* Privacy & Security: Contact hidden from public */}
-                <div className="flex justify-between items-center bg-pink-50/60 p-2 rounded-lg border border-pink-100/60">
-                  <span className="font-semibold text-slate-500">Contact Privacy:</span>
-                  <span className="font-bold text-pink-700 text-[11px]">
-                    🔒 Phone/Email Protected (Hidden from Public)
-                  </span>
-                </div>
-              </div>
-
-              {/* Predefined Safety Rules */}
-              <div className="p-3 bg-purple-50/70 border border-purple-100 rounded-xl text-[11px] text-purple-900 flex flex-col gap-1">
-                <span className="font-bold flex items-center gap-1.5">
-                  <span>🛡️</span> SVKM Handover Safety Protocol:
-                </span>
-                <p className="text-purple-700 leading-relaxed">
-                  Always meet at the Ground Floor Security Desk or Central Library reception. Verify proof of ownership before releasing items.
-                </p>
-              </div>
+          {/* Ownership & Claim Action Section */}
+          <div className="claim-box">
+            <div className="claim-box-title">
+              <span>🛡️</span> Ownership &amp; Claim Status
             </div>
 
-            {/* Claim Submission Section (Server Action) */}
-            <div className="bg-pink-50/60 p-4 rounded-xl border border-pink-100 flex flex-col gap-3">
-              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span>🛡️</span> Is this yours or do you have information?
-              </h3>
-
-              {item.status === 'RESOLVED' ? (
-                <div className="text-xs text-emerald-700 font-semibold bg-emerald-50 p-3 rounded-lg border border-emerald-200">
-                  🎉 This item has been verified and returned to its rightful owner!
+            {item.status === 'RESOLVED' ? (
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: '12px',
+                  background: 'var(--mint)',
+                  border: '1.5px solid var(--mint-d)',
+                  color: 'var(--mint-d)',
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>
+                  🎉 Handover Completed &amp; Item Resolved
                 </div>
-              ) : (
-                <ClaimForm
-                  itemId={item.id}
-                  defaultName={currentUser?.name}
-                  defaultEmail={currentUser?.email}
-                />
-              )}
-            </div>
+                <div style={{ fontSize: '0.82rem', opacity: 0.9 }}>
+                  This item has been officially verified and reunited with its rightful owner
+                  {item.claims.find((c) => c.status === 'APPROVED')
+                    ? ` (${item.claims.find((c) => c.status === 'APPROVED')?.claimantName})`
+                    : ''}.
+                </div>
+              </div>
+            ) : item.status === 'CLAIMED' ? (
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: '12px',
+                  background: 'var(--sky, #e2f0fb)',
+                  border: '1.5px solid var(--sky-d, #1f6fad)',
+                  color: 'var(--sky-d, #1f6fad)',
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>
+                  🔒 Claim Approved — Awaiting Safe Handover
+                </div>
+                <div style={{ fontSize: '0.82rem', opacity: 0.9 }}>
+                  An ownership claim has been verified by campus administration
+                  {item.claims.find((c) => c.status === 'APPROVED')
+                    ? ` for ${item.claims.find((c) => c.status === 'APPROVED')?.claimantName}`
+                    : ''}.
+                  Awaiting physical collection at Ground Floor Security Desk. Competing claims are closed.
+                </div>
+              </div>
+            ) : existingUserClaim ? (
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: '12px',
+                  background: 'white',
+                  border: '1.5px solid rgba(0, 0, 0, 0.08)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <strong style={{ fontSize: '0.88rem' }}>Your Verification Claim:</strong>
+                  <span
+                    style={{
+                      padding: '3px 10px',
+                      borderRadius: '50px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      background:
+                        existingUserClaim.status === 'APPROVED'
+                          ? 'var(--mint)'
+                          : existingUserClaim.status === 'REJECTED'
+                          ? 'var(--rose)'
+                          : 'var(--lemon)',
+                      color:
+                        existingUserClaim.status === 'APPROVED'
+                          ? 'var(--mint-d)'
+                          : existingUserClaim.status === 'REJECTED'
+                          ? 'var(--rose-d)'
+                          : '#8a7a00',
+                    }}
+                  >
+                    {existingUserClaim.status}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-s)', marginBottom: '6px' }}>
+                  Proof details: &quot;{existingUserClaim.proofDetails}&quot;
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
+                  Submitted on {new Date(existingUserClaim.createdAt).toLocaleDateString()} •{' '}
+                  {existingUserClaim.status === 'PENDING'
+                    ? 'Pending administrative decision.'
+                    : existingUserClaim.status === 'APPROVED'
+                    ? 'Approved! Proceed to Ground Floor Security Desk for physical handover.'
+                    : 'Claim reviewed. Please contact campus security if you have more evidence.'}
+                </div>
+              </div>
+            ) : (
+              <ClaimForm
+                itemId={item.id}
+                itemTitle={item.title}
+                itemLocation={item.location}
+                itemCategory={item.category}
+                itemDate={item.dateOccurred}
+                defaultName={currentUser?.name}
+                defaultEmail={currentUser?.email}
+                defaultSapId={currentUser?.sapId || ''}
+                defaultDepartment={currentUser?.department || ''}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -14,12 +14,19 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const [identifier, setIdentifier] = useState('60004210045');
+  const [identifier, setIdentifier] = useState('60017240146');
   const [password, setPassword] = useState('student123');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+
+    // Check compulsory email suffix if user types an email address
+    if (identifier.includes('@') && !identifier.toLowerCase().endsWith('@svkmmumbai.onmicrosoft.com') && activeTab !== 'admin') {
+      setError('Compulsory SVKM Email Suffix required: email must end with @svkmmumbai.onmicrosoft.com');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -54,13 +61,13 @@ function LoginForm() {
     setActiveTab(tab);
     setError('');
     if (tab === 'student') {
-      setIdentifier('60004210045');
+      setIdentifier('60017240146');
       setPassword('student123');
     } else if (tab === 'admin') {
       setIdentifier('admin@djsce.edu.in');
       setPassword('admin123');
     } else if (tab === 'demo') {
-      setIdentifier('60004210088');
+      setIdentifier('SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com');
       setPassword('student123');
     }
   }
@@ -68,12 +75,12 @@ function LoginForm() {
   return (
     <div
       style={{
-        background: 'rgba(255, 255, 255, 0.88)',
+        background: 'var(--card-bg)',
         backdropFilter: 'blur(20px)',
-        border: '1.5px solid rgba(255, 255, 255, 0.95)',
+        border: '1.5px solid var(--card-border, rgba(255, 255, 255, 0.95))',
         borderRadius: '24px',
         padding: '44px 40px',
-        boxShadow: '0 16px 64px rgba(140, 100, 130, 0.12)',
+        boxShadow: 'var(--shadow)',
       }}
     >
       {/* LOGO */}
@@ -147,7 +154,7 @@ function LoginForm() {
             fontSize: '0.85rem',
             fontWeight: 600,
             border: 'none',
-            background: activeTab === 'student' ? 'white' : 'transparent',
+            background: activeTab === 'student' ? 'var(--white)' : 'transparent',
             color: activeTab === 'student' ? 'var(--text)' : 'var(--text-s)',
             boxShadow: activeTab === 'student' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
             transition: 'all 0.2s',
@@ -167,7 +174,7 @@ function LoginForm() {
             fontSize: '0.85rem',
             fontWeight: 600,
             border: 'none',
-            background: activeTab === 'admin' ? 'white' : 'transparent',
+            background: activeTab === 'admin' ? 'var(--white)' : 'transparent',
             color: activeTab === 'admin' ? 'var(--text)' : 'var(--text-s)',
             boxShadow: activeTab === 'admin' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
             transition: 'all 0.2s',
@@ -187,7 +194,7 @@ function LoginForm() {
             fontSize: '0.85rem',
             fontWeight: 600,
             border: 'none',
-            background: activeTab === 'demo' ? 'white' : 'transparent',
+            background: activeTab === 'demo' ? 'var(--white)' : 'transparent',
             color: activeTab === 'demo' ? 'var(--text)' : 'var(--text-s)',
             boxShadow: activeTab === 'demo' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
             transition: 'all 0.2s',
@@ -223,7 +230,7 @@ function LoginForm() {
             required
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            placeholder={activeTab === 'admin' ? 'admin@djsce.edu.in' : 'e.g. 60004210045'}
+            placeholder={activeTab === 'admin' ? 'admin@djsce.edu.in' : 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com or 60017240146'}
             className="form-input"
           />
         </div>

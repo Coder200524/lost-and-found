@@ -124,10 +124,10 @@ export default function SwipeClient() {
       {/* MATCH OVERLAY POPUP */}
       <div className={`match-overlay ${matchedItem ? 'show' : ''}`}>
         <div className="match-emoji">🎉</div>
-        <h2 className="match-title">It&apos;s a Match!</h2>
+        <h2 className="match-title">Potential Match Identified!</h2>
         <p className="match-sub">
-          Both parties swiped right!<br />
-          You can now chat in private to verify ownership and arrange handover.
+          A potential match was discovered in the campus database.<br />
+          Open the report to submit an ownership verification claim or coordinate via chat.
         </p>
 
         <div className="match-cards">
@@ -144,13 +144,25 @@ export default function SwipeClient() {
           </div>
         </div>
 
-        <div className="match-actions">
-          <Link href="/chat" className="match-chat">
+        <div className="match-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '320px', margin: '0 auto' }}>
+          {matchedItem && (
+            <Link
+              href={`/items/${matchedItem.id}`}
+              className="match-chat"
+              style={{ background: 'var(--mint-d)', color: 'white', textDecoration: 'none', display: 'block', textAlign: 'center' }}
+            >
+              📝 View Details &amp; Submit Claim
+            </Link>
+          )}
+          <Link href="/chat" className="match-chat" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>
             💬 Open In-App Chat
           </Link>
           <button className="match-keep" onClick={() => setMatchedItem(null)}>
-            Keep Swiping
+            Continue Swiping
           </button>
+        </div>
+        <div style={{ marginTop: '12px', fontSize: '0.75rem', color: 'var(--text-s)', textAlign: 'center' }}>
+          ℹ️ Swiping right indicates a possible match — proof of ownership is verified before item release.
         </div>
       </div>
 
@@ -178,7 +190,7 @@ export default function SwipeClient() {
                 padding: '7px 18px',
                 borderRadius: '50px',
                 border: 'none',
-                background: activeTab === 'FOUND' ? 'white' : 'transparent',
+                background: activeTab === 'FOUND' ? 'var(--white)' : 'transparent',
                 color: activeTab === 'FOUND' ? 'var(--text)' : 'var(--text-s)',
                 fontWeight: 600,
                 fontSize: '0.82rem',
@@ -197,7 +209,7 @@ export default function SwipeClient() {
                 padding: '7px 18px',
                 borderRadius: '50px',
                 border: 'none',
-                background: activeTab === 'LOST' ? 'white' : 'transparent',
+                background: activeTab === 'LOST' ? 'var(--white)' : 'transparent',
                 color: activeTab === 'LOST' ? 'var(--text)' : 'var(--text-s)',
                 fontWeight: 600,
                 fontSize: '0.82rem',

@@ -27,12 +27,21 @@ export async function GET(request: NextRequest) {
       whereClause.category = category;
     }
 
-    if (type && type !== 'ALL') {
+    if (type && type.toUpperCase() === 'CLAIMED') {
+      whereClause.status = { in: ['CLAIMED', 'RESOLVED'] };
+    } else if (type && type !== 'ALL') {
       whereClause.type = type.toUpperCase();
+      if (!status) {
+        whereClause.status = 'OPEN';
+      }
     }
 
     if (status && status !== 'ALL') {
-      whereClause.status = status.toUpperCase();
+      if (status.toUpperCase() === 'CLAIMED') {
+        whereClause.status = { in: ['CLAIMED', 'RESOLVED'] };
+      } else {
+        whereClause.status = status.toUpperCase();
+      }
     }
 
     const items = await prisma.item.findMany({
@@ -86,6 +95,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const emailLower = (contactEmail || '').trim().toLowerCase();
+    if (emailLower && !emailLower.endsWith('@svkmmumbai.onmicrosoft.com') && !emailLower.startsWith('admin')) {
+      return NextResponse.json(
+        { success: false, error: 'Compulsory SVKM Email Suffix: Email must end with @svkmmumbai.onmicrosoft.com' },
+        { status: 400 }
+      );
+    }
+
+    // Mindmap Rule: "Post Found Item: MANDATORY IMAGE!"
+    if (type.toUpperCase() === 'FOUND' && (!imageUrl || imageUrl.trim() === '')) {
+      return NextResponse.json(
+        { success: false, error: 'A photo is MANDATORY for all Found items to enable verification!' },
+        { status: 400 }
+      );
+    }
+
+    const locLower = location.toLowerCase();
+    const isHotspot =
+      locLower.includes('canteen') ||
+      locLower.includes('library') ||
+      locLower.includes('402') ||
+      locLower.includes('lab') ||
+      locLower.includes('gymkhana');
+
+    const isMasked = category === 'ID Cards' || title.toLowerCase().includes('id');
+
     const newItem = await prisma.item.create({
       data: {
         title,
@@ -93,6 +128,8 @@ export async function POST(request: NextRequest) {
         category,
         type: type.toUpperCase(),
         location,
+        isHotspot,
+        isMasked,
         dateOccurred: dateOccurred || new Date().toISOString().split('T')[0],
         imageUrl: imageUrl || '',
         reward: reward || '',

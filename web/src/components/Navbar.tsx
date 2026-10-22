@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { logoutAction } from '@/actions/auth';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default async function Navbar() {
   const user = await getCurrentUser();
@@ -17,6 +18,8 @@ export default async function Navbar() {
         <Link href="/swipe">Swipe</Link>
         <Link href="/chat">Chat</Link>
         {user?.role === 'ADMIN' && <Link href="/admin">Admin</Link>}
+
+        <ThemeToggle />
 
         {user ? (
           <div className="nav-user">

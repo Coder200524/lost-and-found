@@ -355,8 +355,8 @@ export default function ChatClient() {
             gap: '8px',
             flexWrap: 'wrap',
             flexShrink: 0,
-            borderTop: '1px solid rgba(0,0,0,0.05)',
-            background: 'rgba(255,255,255,0.7)',
+            borderTop: '1px solid var(--sidebar-border, rgba(0,0,0,0.05))',
+            background: 'var(--card-bg)',
           }}
         >
           {quickReplies.map((q) => (
@@ -366,12 +366,12 @@ export default function ChatClient() {
               style={{
                 padding: '7px 14px',
                 borderRadius: '50px',
-                border: '1.5px solid rgba(0,0,0,0.08)',
-                background: 'white',
+                border: '1.5px solid var(--input-border, rgba(0,0,0,0.08))',
+                background: 'var(--white)',
                 fontSize: '0.8rem',
                 fontWeight: 500,
                 cursor: 'pointer',
-                color: 'var(--text-s)',
+                color: 'var(--text)',
                 transition: 'all 0.18s',
               }}
             >
@@ -388,8 +388,8 @@ export default function ChatClient() {
           }}
           style={{
             padding: '14px 20px',
-            background: 'rgba(255,252,253,0.95)',
-            borderTop: '1px solid rgba(249,200,207,0.3)',
+            background: 'var(--card-bg)',
+            borderTop: '1px solid var(--sidebar-border, rgba(249,200,207,0.3))',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
@@ -405,8 +405,9 @@ export default function ChatClient() {
               flex: 1,
               padding: '12px 18px',
               borderRadius: '24px',
-              border: '1.5px solid rgba(0,0,0,0.08)',
-              background: 'white',
+              border: '1.5px solid var(--input-border, rgba(0,0,0,0.08))',
+              background: 'var(--input-bg)',
+              color: 'var(--text)',
               fontSize: '0.92rem',
               fontFamily: 'var(--font-sans)',
               outline: 'none',

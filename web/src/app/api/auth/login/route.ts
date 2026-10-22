@@ -16,13 +16,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up by either SAP ID or College Email (with alias normalization for @djsce.edu and @djsce.edu.in)
+    // Compulsory email suffix check for student email inputs
     const idLower = identifier.toLowerCase();
-    const candidateEmails = [idLower];
-    if (idLower.endsWith('@djsce.edu.in')) {
-      candidateEmails.push(idLower.replace('@djsce.edu.in', '@djsce.edu'));
-    } else if (idLower.endsWith('@djsce.edu')) {
-      candidateEmails.push(idLower.replace('@djsce.edu', '@djsce.edu.in'));
+    if (identifier.includes('@') && !idLower.endsWith('@svkmmumbai.onmicrosoft.com') && !idLower.startsWith('admin')) {
+      return NextResponse.json(
+        { success: false, error: 'Compulsory SVKM Email Suffix: Email must end with @svkmmumbai.onmicrosoft.com' },
+        { status: 400 }
+      );
+    }
+
+    const candidateEmails = [idLower, idLower.toUpperCase()];
+    if (idLower === 'suruchi' || idLower === '60017240146' || idLower.includes('suruchi.makwana')) {
+      candidateEmails.push('suruchi.makwana46@svkmmumbai.onmicrosoft.com', 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com');
     }
     if (idLower === 'admin' || idLower === 'admin-001') {
       candidateEmails.push('admin@djsce.edu', 'admin@djsce.edu.in');

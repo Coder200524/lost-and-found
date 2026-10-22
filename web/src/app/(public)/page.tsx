@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import MobileCategoryCarousel from '@/components/MobileCategoryCarousel';
 import MobileFeatureCards from '@/components/MobileFeatureCards';
+import Footer from '@/components/Footer';
 
 export default async function HomePage() {
   const [totalItems, resolvedCount, recentItems, currentUser] = await Promise.all([
@@ -333,6 +334,7 @@ export default async function HomePage() {
           </div>
         </div>
       )}
+      <Footer />
     </>
   );
 }

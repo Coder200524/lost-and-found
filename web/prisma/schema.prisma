@@ -72,6 +72,10 @@ model Claim {
   
   claimantName  String
   claimantEmail String
+  rollNo        String?   // Formatted Roll No: e.g. A123, B007
+  sapId         String?   // SVKM SAP ID: e.g. 60004210045 (12 digits starting with 6)
+  department    String?   // e.g. Information Technology
+  academicYear  String?   // e.g. Third Year (TE)
   proofDetails  String
   status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
   pointsAwarded Int       @default(0)
