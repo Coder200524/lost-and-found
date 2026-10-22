@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: const Color(0xFF5BBF8E),
-            content: Text('Welcome, ${AuthService().currentUser?.name ?? "Student"}! 🎓'),
+            content: Text('Welcome, ${AuthService().currentUser?.name ?? "Student"}!'),
           ),
         );
         widget.onLoginSuccess?.call();
@@ -246,7 +246,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: _isLoading
                         ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Sign In 🚀', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.login_outlined, size: 18),
+                              SizedBox(width: 8),
+                              Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                   ),
                 ],
               ),
@@ -254,10 +261,16 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 28),
 
             // Demo Accounts Chips
-            Text(
-              '⚡ Quick Demo Sign In (1-Tap):',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _theme.subtextColor),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.bolt_outlined, size: 16, color: _theme.subtextColor),
+                const SizedBox(width: 4),
+                Text(
+                  'Quick Demo Sign In (1-Tap):',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _theme.subtextColor),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -266,21 +279,21 @@ class _LoginScreenState extends State<LoginScreen> {
               runSpacing: 8,
               children: [
                 ActionChip(
-                  avatar: const Text('👩‍💻'),
+                  avatar: Icon(Icons.school_outlined, size: 16, color: _theme.textColor),
                   label: Text('Suruchi (Student)', style: TextStyle(color: _theme.textColor)),
                   backgroundColor: _theme.cardColor,
                   side: BorderSide(color: _theme.borderColor),
                   onPressed: () => _quickFill('60017240146', 'student123'),
                 ),
                 ActionChip(
-                  avatar: const Text('👩‍🎓'),
+                  avatar: Icon(Icons.school_outlined, size: 16, color: _theme.textColor),
                   label: Text('Priya (Student)', style: TextStyle(color: _theme.textColor)),
                   backgroundColor: _theme.cardColor,
                   side: BorderSide(color: _theme.borderColor),
                   onPressed: () => _quickFill('60004210088', 'student123'),
                 ),
                 ActionChip(
-                  avatar: const Text('🛡️'),
+                  avatar: Icon(Icons.shield_outlined, size: 16, color: _theme.textColor),
                   label: Text('Admin Sharma', style: TextStyle(color: _theme.textColor)),
                   backgroundColor: _theme.cardColor,
                   side: BorderSide(color: _theme.borderColor),

@@ -24,15 +24,15 @@ class _BrowseScreenState extends State<BrowseScreen> {
   late String _selectedType;
   String _selectedStatus = 'ALL';
 
-  final List<Map<String, String>> _categories = [
-    {'name': 'All', 'emoji': '🔍'},
-    {'name': 'ID Cards', 'emoji': '🪪'},
-    {'name': 'Electronics', 'emoji': '📱'},
-    {'name': 'Bags', 'emoji': '🎒'},
-    {'name': 'Water Bottles', 'emoji': '🍶'},
-    {'name': 'Stationery', 'emoji': '✏️'},
-    {'name': 'Accessories', 'emoji': '⌚'},
-    {'name': 'Others', 'emoji': '📦'},
+  final List<Map<String, dynamic>> _categories = [
+    {'name': 'All', 'icon': Icons.search_outlined},
+    {'name': 'ID Cards', 'icon': Icons.badge_outlined},
+    {'name': 'Electronics', 'icon': Icons.devices_outlined},
+    {'name': 'Bags', 'icon': Icons.backpack_outlined},
+    {'name': 'Water Bottles', 'icon': Icons.local_drink_outlined},
+    {'name': 'Stationery', 'icon': Icons.edit_outlined},
+    {'name': 'Accessories', 'icon': Icons.watch_outlined},
+    {'name': 'Others', 'icon': Icons.inventory_2_outlined},
   ];
 
   @override
@@ -161,10 +161,10 @@ class _BrowseScreenState extends State<BrowseScreen> {
             ),
             child: Row(
               children: [
-                _buildTypeBtn('ALL', 'Active'),
-                _buildTypeBtn('LOST', 'Lost 🔴'),
-                _buildTypeBtn('FOUND', 'Found 🟢'),
-                _buildTypeBtn('CLAIMED', 'Claimed 🤝'),
+                _buildTypeBtn('ALL', 'Active', Icons.layers_outlined),
+                _buildTypeBtn('LOST', 'Lost', Icons.search_outlined),
+                _buildTypeBtn('FOUND', 'Found', Icons.check_circle_outline),
+                _buildTypeBtn('CLAIMED', 'Claimed', Icons.verified_outlined),
               ],
             ),
           ),
@@ -182,8 +182,12 @@ class _BrowseScreenState extends State<BrowseScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
-                    avatar: Text(cat['emoji'] ?? ''),
-                    label: Text(cat['name'] ?? ''),
+                    avatar: Icon(
+                      cat['icon'] as IconData,
+                      size: 14,
+                      color: isSelected ? Colors.white : _theme.textColor,
+                    ),
+                    label: Text(cat['name'] as String),
                     selected: isSelected,
                     selectedColor: const Color(0xFFE8848F),
                     backgroundColor: _theme.cardColor,
@@ -286,7 +290,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
     );
   }
 
-  Widget _buildTypeBtn(String type, String label) {
+  Widget _buildTypeBtn(String type, String label, IconData icon) {
     final isSelected = _selectedType == type;
     final isDark = _theme.isDarkMode;
     return Expanded(
@@ -301,14 +305,25 @@ class _BrowseScreenState extends State<BrowseScreen> {
             color: isSelected ? const Color(0xFFE8848F) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? Colors.white : (isDark ? Colors.grey.shade400 : const Color(0xFF7A6E80)),
-              fontWeight: FontWeight.bold,
-              fontSize: 11,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 13,
+                color: isSelected ? Colors.white : (isDark ? Colors.grey.shade400 : const Color(0xFF7A6E80)),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : (isDark ? Colors.grey.shade400 : const Color(0xFF7A6E80)),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -320,7 +335,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('🔍', style: TextStyle(fontSize: 48)),
+          Icon(Icons.search_off_outlined, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 12),
           Text(
             'No matching items found',

@@ -196,7 +196,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Text('🤖', style: TextStyle(fontSize: 36)),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.smart_toy_outlined, size: 28, color: Color(0xFF6D28D9)),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(

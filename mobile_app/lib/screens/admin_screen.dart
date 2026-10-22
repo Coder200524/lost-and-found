@@ -88,7 +88,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(ok ? '🎉 Handover complete! Item marked as RESOLVED.' : 'Failed to update handover.'),
+          content: Text(ok ? 'Handover complete! Item marked as RESOLVED.' : 'Failed to update handover.'),
           backgroundColor: ok ? Colors.green : Colors.red,
         ),
       );
@@ -109,7 +109,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('🔒', style: TextStyle(fontSize: 48)),
+              Icon(Icons.lock_outline, size: 48, color: _theme.subtextColor),
               const SizedBox(height: 12),
               Text(
                 'Administrator Access Required',
@@ -163,10 +163,10 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
           indicatorColor: const Color(0xFFE8848F),
           isScrollable: true,
           tabs: [
-            Tab(text: '🛡️ Claims (${_pendingClaims.length})'),
-            Tab(text: '🤝 Handover (${_handoverItems.length})'),
-            Tab(text: '🚩 Flagged (${_flaggedItems.length})'),
-            const Tab(text: '🗺️ Heatmap'),
+            Tab(text: 'Claims (${_pendingClaims.length})'),
+            Tab(text: 'Handover (${_handoverItems.length})'),
+            Tab(text: 'Flagged (${_flaggedItems.length})'),
+            const Tab(text: 'Heatmap'),
           ],
         ),
       ),
@@ -300,7 +300,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('✅', style: TextStyle(fontSize: 40)),
+            const Icon(Icons.check_circle_outline, size: 40, color: Color(0xFF5BBF8E)),
             const SizedBox(height: 8),
             Text(
               'No Pending Verification Claims',

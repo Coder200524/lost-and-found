@@ -73,7 +73,7 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Text('✨', style: TextStyle(fontSize: 18)),
+            const Icon(Icons.auto_awesome_outlined, size: 20, color: Color(0xFF6D28D9)),
             const SizedBox(width: 8),
             Text('Gemini Matcher', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: _theme.textColor)),
           ],
@@ -199,7 +199,11 @@ class _GeminiMatcherScreenState extends State<GeminiMatcherScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('💡', style: TextStyle(fontSize: 20)),
+                  Icon(
+                    Icons.lightbulb_outline,
+                    size: 20,
+                    color: _theme.isDarkMode ? const Color(0xFFD8C7F8) : const Color(0xFF4C1D95),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(

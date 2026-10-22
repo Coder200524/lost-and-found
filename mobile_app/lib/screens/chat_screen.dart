@@ -155,7 +155,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             child: Row(
               children: [
-                const Text('🔒', style: TextStyle(fontSize: 22)),
+                const Icon(Icons.lock_outline, size: 22, color: Color(0xFF6D28D9)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -199,8 +199,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         color: _theme.surfaceAltColor,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Center(
-                        child: Text(convo['emoji'] ?? '📦', style: const TextStyle(fontSize: 24)),
+                      child: const Center(
+                        child: Icon(Icons.inventory_2_outlined, size: 24, color: Color(0xFF9B8BDB)),
                       ),
                     ),
                     title: Row(
@@ -230,9 +230,15 @@ class _ChatScreenState extends State<ChatScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          '📍 ${convo['location']}',
-                          style: const TextStyle(fontSize: 11, color: Color(0xFF9B8BDB)),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, size: 12, color: Color(0xFF9B8BDB)),
+                            const SizedBox(width: 4),
+                            Text(
+                              convo['location'],
+                              style: const TextStyle(fontSize: 11, color: Color(0xFF9B8BDB)),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -265,7 +271,13 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(convo['title'], style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _theme.textColor)),
-            Text('📍 ${convo['location']}', style: TextStyle(fontSize: 11, color: _theme.subtextColor)),
+            Row(
+              children: [
+                Icon(Icons.location_on_outlined, size: 11, color: _theme.subtextColor),
+                const SizedBox(width: 3),
+                Text(convo['location'], style: TextStyle(fontSize: 11, color: _theme.subtextColor)),
+              ],
+            ),
           ],
         ),
         backgroundColor: _theme.surfaceColor,
@@ -286,7 +298,11 @@ class _ChatScreenState extends State<ChatScreen> {
             color: isDark ? const Color(0xFF382E14) : const Color(0xFFFDF3C0),
             child: Row(
               children: [
-                const Text('🛡️', style: TextStyle(fontSize: 16)),
+                Icon(
+                  Icons.shield_outlined,
+                  size: 16,
+                  color: isDark ? const Color(0xFFFDE884) : const Color(0xFF6A5A00),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -403,11 +419,11 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                _buildQuickReplyChip('🛡️ Security Desk Handover', () => _sendMessage('I can meet at the Ground Floor Security Desk for verification. 🛡️', isSafety: true)),
+                _buildQuickReplyChip('Security Desk Handover', () => _sendMessage('I can meet at the Ground Floor Security Desk for verification.', isSafety: true)),
                 const SizedBox(width: 8),
-                _buildQuickReplyChip('🪪 Check SAP ID', () => _sendMessage('Please bring your SVKM SAP ID card so we can verify ownership. 🪪')),
+                _buildQuickReplyChip('Check SAP ID', () => _sendMessage('Please bring your SVKM SAP ID card so we can verify ownership.')),
                 const SizedBox(width: 8),
-                _buildQuickReplyChip('🔍 Unique Mark?', () => _sendMessage('Can you describe any unique sticker, scratch, or detail? 🔍')),
+                _buildQuickReplyChip('Unique Mark?', () => _sendMessage('Can you describe any unique sticker, scratch, or detail?')),
               ],
             ),
           ),

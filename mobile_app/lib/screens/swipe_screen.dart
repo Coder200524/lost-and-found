@@ -88,7 +88,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 color: isDark ? const Color(0xFF1B3B2F) : const Color(0xFFC4EAD9),
                 shape: BoxShape.circle,
               ),
-              child: const Center(child: Text('🎉', style: TextStyle(fontSize: 32))),
+              child: const Center(child: Icon(Icons.celebration_outlined, size: 32, color: Color(0xFF2B9365))),
             ),
             const SizedBox(height: 16),
             Text(
@@ -111,7 +111,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 );
               },
               icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text('Open In-App Chat 💬'),
+              label: const Text('Open In-App Chat'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE8848F),
                 foregroundColor: Colors.white,
@@ -132,7 +132,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 minimumSize: const Size.fromHeight(44),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('View Full Details & Claim 📝'),
+              child: const Text('View Full Details & Claim'),
             ),
             const SizedBox(height: 4),
             TextButton(
@@ -346,7 +346,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: _theme.isDarkMode ? const Color(0xFF2A2438) : const Color(0xFFDDD6F3),
-                      child: const Center(child: Text('📦', style: TextStyle(fontSize: 64))),
+                      child: const Center(child: Icon(Icons.inventory_2_outlined, size: 56, color: Colors.white70)),
                     ),
                   ),
                   // Gradient Overlay
@@ -394,7 +394,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                             border: Border.all(color: const Color(0xFF5BBF8E), width: 3),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text('MATCH 💚', style: TextStyle(color: Color(0xFF5BBF8E), fontWeight: FontWeight.bold, fontSize: 20)),
+                          child: const Text('MATCH', style: TextStyle(color: Color(0xFF5BBF8E), fontWeight: FontWeight.bold, fontSize: 20)),
                         ),
                       ),
                     ),
@@ -410,7 +410,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                             border: Border.all(color: Colors.redAccent, width: 3),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text('PASS ❌', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 20)),
+                          child: const Text('PASS', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 20)),
                         ),
                       ),
                     ),
@@ -423,15 +423,31 @@ class _SwipeScreenState extends State<SwipeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Flexible(
-                          child: Text(
-                            '📍 ${item.location}',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
-                            overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.location_on_outlined, size: 14, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  item.location,
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Text(
-                          '📅 ${item.dateOccurred}',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.calendar_today_outlined, size: 12, color: Colors.white70),
+                            const SizedBox(width: 4),
+                            Text(
+                              item.dateOccurred,
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -511,7 +527,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 ),
               ],
             ),
-            child: const Text('✨', style: TextStyle(fontSize: 48)),
+            child: const Icon(Icons.check_circle_outline, size: 48, color: Color(0xFFE8848F)),
           ),
           const SizedBox(height: 20),
           Text(

@@ -179,6 +179,23 @@ class ApiService {
         'error': 'Compulsory SVKM Email Suffix required: email must end with @svkmmumbai.onmicrosoft.com'
       };
     }
+    // Attach item details for rich offline/local claims display
+    Map<String, dynamic>? itemMap;
+    for (final it in SeedData.initialItems) {
+      if (it.id == itemId) {
+        itemMap = {
+          'id': it.id,
+          'title': it.title,
+          'category': it.category,
+          'location': it.location,
+          'dateOccurred': it.dateOccurred,
+          'status': it.status,
+          'imageUrl': it.imageUrl,
+        };
+        break;
+      }
+    }
+
     final localClaim = {
       'id': 'claim-${DateTime.now().millisecondsSinceEpoch}',
       'itemId': itemId,
@@ -191,6 +208,7 @@ class ApiService {
       'proofDetails': proofDetails,
       'status': 'PENDING',
       'createdAt': DateTime.now().toIso8601String(),
+      'item': itemMap,
     };
     localClaims.insert(0, localClaim);
 
@@ -289,7 +307,7 @@ class ApiService {
       {
         'id': 'msg-safety',
         'senderName': 'SVKM Safety Bot',
-        'content': '🛡️ Safety Reminder: Meet only at the Ground Floor Security Desk or Central Library reception for item verification and handover.',
+        'content': 'Safety Reminder: Meet only at the Ground Floor Security Desk or Central Library reception for item verification and handover.',
         'createdAt': 'Just now',
         'isSafety': true,
         'isMine': false,

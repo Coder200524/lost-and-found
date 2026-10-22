@@ -1,10 +1,11 @@
-// Profile & SVKM Identity Screen with Live Auth & Server Settings
 import 'package:flutter/material.dart';
+import '../models/item.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/theme_service.dart';
 import 'login_screen.dart';
 import 'admin_screen.dart';
+import 'item_detail_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -42,13 +43,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadClaims() async {
     final user = _auth.currentUser;
-    if (user != null) {
+    if (user != null && user.role != 'ADMIN') {
       final claims = await ApiService.fetchMyClaims(claimantEmail: user.email, claimantId: user.id);
       if (mounted) {
         setState(() {
           _myClaims = claims;
         });
       }
+    } else if (mounted) {
+      setState(() {
+        _myClaims = [];
+      });
     }
   }
 
@@ -60,9 +65,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: _theme.surfaceColor,
-        title: Text(
-          'Backend Server Settings ⚙️',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _theme.textColor),
+        title: Row(
+          children: [
+            Icon(Icons.dns_outlined, color: _theme.textColor, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Backend Server Settings',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: _theme.textColor),
+            ),
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -202,7 +213,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('🌸 FinDora Mobile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.shield_outlined, color: Colors.white, size: 14),
+                        const SizedBox(width: 6),
+                        const Text('FinDora Mobile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                      ],
+                    ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -219,9 +237,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    Text(
-                      user?.avatar ?? '👤',
-                      style: const TextStyle(fontSize: 36),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.person_outline, color: Colors.white, size: 24),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -248,8 +273,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('SAP ID: ${user?.sapId ?? "—"}', style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 12)),
-                    Text(user?.badge ?? 'Campus Member', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(
+                      user?.role == 'ADMIN' ? 'Admin ID: ${user?.sapId ?? "ADMIN-001"}' : 'SAP ID: ${user?.sapId ?? "—"}',
+                      style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 12),
+                    ),
+                    Text(
+                      user?.role == 'ADMIN' ? 'Faculty Admin' : (user?.badge ?? 'Campus Member'),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
                   ],
                 ),
               ],
@@ -278,7 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Row(
                     children: [
-                      const Text('🛡️', style: TextStyle(fontSize: 22)),
+                      const Icon(Icons.shield_outlined, color: Colors.white, size: 22),
                       const SizedBox(width: 8),
                       const Expanded(
                         child: Text(
@@ -335,11 +366,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Column(
                 children: [
-                  Text('🔑 Access Student Features', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: _theme.textColor)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.lock_open_outlined, size: 18, color: _theme.textColor),
+                      const SizedBox(width: 6),
+                      Text('Access Student Features', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: _theme.textColor)),
+                    ],
+                  ),
                   const SizedBox(height: 4),
                   Text('Sign in to submit claims, chat with owners, and earn rewards.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: _theme.subtextColor)),
                   const SizedBox(height: 12),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
                     },
@@ -349,7 +387,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       minimumSize: const Size.fromHeight(40),
                     ),
-                    child: const Text('Sign In with SAP ID 🚀', style: TextStyle(fontWeight: FontWeight.bold)),
+                    icon: const Icon(Icons.login_outlined, size: 16),
+                    label: const Text('Sign In with SAP ID', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -357,28 +396,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 16),
 
-          // Rewards & Points
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: _theme.cardColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04), blurRadius: 10, offset: const Offset(0, 3)),
-              ],
+          // Rewards & Points / Admin Overview
+          if (user?.role == 'ADMIN')
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: _theme.cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04), blurRadius: 10, offset: const Offset(0, 3)),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem('Security Console', 'Full Access', const Color(0xFF6D28D9), const Color(0xFFDDD6F3), Icons.shield_outlined),
+                  _buildStatItem('Authority', 'Faculty Admin', const Color(0xFF2B9365), const Color(0xFFC4EAD9), Icons.verified_user_outlined),
+                ],
+              ),
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: _theme.cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04), blurRadius: 10, offset: const Offset(0, 3)),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem('Reward Points', '${user?.points ?? 250}', const Color(0xFF8A7A00), const Color(0xFFFDF3C0), Icons.stars_outlined),
+                  _buildStatItem('Badge Status', user?.badge ?? 'Campus Hero', const Color(0xFF5BBF8E), const Color(0xFFC4EAD9), Icons.verified_user_outlined),
+                ],
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem('⭐ Reward Points', '${user?.points ?? 0}', const Color(0xFF8A7A00), const Color(0xFFFDF3C0)),
-                _buildStatItem('🛡️ Badge Status', user?.badge ?? 'Newbie', const Color(0xFF5BBF8E), const Color(0xFFC4EAD9)),
-              ],
-            ),
-          ),
           const SizedBox(height: 16),
 
-          // My Submitted Claims (Requirement A.3 & F)
-          if (isLoggedIn)
+          // My Submitted Claims (Student Portal Only - Completely hidden for Admin)
+          if (isLoggedIn && user?.role != 'ADMIN')
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -395,9 +453,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '📋 My Submitted Claims (${_myClaims.length})',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: _theme.textColor),
+                      Row(
+                        children: [
+                          Icon(Icons.assignment_outlined, size: 16, color: _theme.textColor),
+                          const SizedBox(width: 6),
+                          Text(
+                            'My Submitted Claims (${_myClaims.length})',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: _theme.textColor),
+                          ),
+                        ],
                       ),
                       Text(
                         'Private Records',
@@ -420,14 +484,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       final isApproved = status == 'APPROVED';
                       final isRejected = status == 'REJECTED';
                       final item = claim['item'] as Map<String, dynamic>?;
+                      final rollNo = claim['rollNo'] ?? 'A090';
+                      final sapId = claim['sapId'] ?? user?.sapId ?? '60017240146';
+                      final department = claim['department'] ?? user?.department ?? 'AIML';
 
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: _theme.surfaceAltColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: isDark ? const Color(0xFF382E48) : Colors.black.withValues(alpha: 0.05)),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: isDark ? const Color(0xFF382E48) : Colors.black.withValues(alpha: 0.06)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,9 +503,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    item?['title'] ?? 'Reported Item',
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _theme.textColor),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (item != null) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => ItemDetailScreen(item: Item.fromJson(item)),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            item?['title'] ?? 'Reported Campus Item',
+                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _theme.textColor),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        const Icon(Icons.open_in_new, size: 12, color: Color(0xFFE8848F)),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 Container(
@@ -466,26 +554,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Proof: ${claim['proofDetails'] ?? ''}',
-                              style: TextStyle(fontSize: 11, color: _theme.subtextColor),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.confirmation_number_outlined, size: 10, color: _theme.subtextColor),
+                                      const SizedBox(width: 3),
+                                      Text('Roll: $rollNo', style: TextStyle(fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.bold, color: _theme.textColor)),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.badge_outlined, size: 10, color: _theme.subtextColor),
+                                      const SizedBox(width: 3),
+                                      Text('SAP: $sapId', style: TextStyle(fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.bold, color: _theme.textColor)),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(department, style: TextStyle(fontSize: 10, color: _theme.subtextColor)),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              isApproved
-                                  ? '🎉 Approved! Collect item at Ground Floor Security Desk.'
-                                  : isRejected
-                                      ? '✕ Evidence insufficient. Contact security for assistance.'
-                                      : '⏳ Pending review by campus administration.',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.black26 : Colors.white60,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border(left: BorderSide(color: const Color(0xFFE8848F), width: 3)),
+                              ),
+                              child: Text(
+                                'Proof: "${claim['proofDetails'] ?? ''}"',
+                                style: TextStyle(fontSize: 11, color: _theme.textColor),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
                                 color: isApproved
-                                    ? const Color(0xFF5BBF8E)
+                                    ? (isDark ? const Color(0xFF143324) : const Color(0xFFEAF8F1))
                                     : isRejected
-                                        ? const Color(0xFFE8848F)
-                                        : const Color(0xFF8A7A00),
+                                        ? (isDark ? const Color(0xFF38151B) : const Color(0xFFFDE8EA))
+                                        : (isDark ? const Color(0xFF332E14) : const Color(0xFFFEF9E0)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(
+                                    isApproved
+                                        ? Icons.check_circle_outline
+                                        : isRejected
+                                            ? Icons.highlight_off_outlined
+                                            : Icons.schedule_outlined,
+                                    size: 14,
+                                    color: isApproved
+                                        ? const Color(0xFF5BBF8E)
+                                        : isRejected
+                                            ? const Color(0xFFE8848F)
+                                            : const Color(0xFF8A7A00),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      isApproved
+                                          ? 'Claim Approved: Visit Ground Floor Security Desk (Gate 2) with your physical SVKM RFID Card for handover.'
+                                          : isRejected
+                                              ? 'Evidence insufficient. Contact security desk if you have serial numbers or additional proof.'
+                                              : 'Verification in progress: Campus administration & finder are reviewing your submitted ownership proof.',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: isApproved
+                                            ? const Color(0xFF5BBF8E)
+                                            : isRejected
+                                                ? const Color(0xFFE8848F)
+                                                : const Color(0xFF8A7A00),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -509,7 +683,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 SwitchListTile(
-                  secondary: Text(isDark ? '🌙' : '☀️', style: const TextStyle(fontSize: 20)),
+                  secondary: Icon(isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined, size: 22, color: _theme.textColor),
                   title: Text('Dark Mode Appearance', style: TextStyle(fontWeight: FontWeight.w600, color: _theme.textColor)),
                   subtitle: Text(
                     isDark ? 'Dark theme enabled' : 'Light theme enabled',
@@ -523,7 +697,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Text('⚙️', style: TextStyle(fontSize: 20)),
+                  leading: Icon(Icons.dns_outlined, color: _theme.textColor),
                   title: Text('Server Connection (IP / USB)', style: TextStyle(color: _theme.textColor)),
                   subtitle: Text(ApiService.baseUrl, style: TextStyle(fontSize: 11, color: _theme.subtextColor)),
                   trailing: Icon(Icons.arrow_forward_ios, size: 14, color: _theme.subtextColor),
@@ -531,7 +705,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Text('🔒', style: TextStyle(fontSize: 20)),
+                  leading: Icon(Icons.shield_outlined, color: _theme.textColor),
                   title: Text('SVKM Privacy & Security', style: TextStyle(color: _theme.textColor)),
                   subtitle: Text('Item masking & security desk handover', style: TextStyle(fontSize: 11, color: _theme.subtextColor)),
                   trailing: Icon(Icons.arrow_forward_ios, size: 14, color: _theme.subtextColor),
@@ -544,7 +718,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (isLoggedIn) ...[
                   const Divider(height: 1),
                   ListTile(
-                    leading: const Text('🚪', style: TextStyle(fontSize: 20)),
+                    leading: const Icon(Icons.logout_outlined, color: Colors.redAccent),
                     title: const Text('Sign Out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
                     onTap: () {
                       _auth.logout();
@@ -589,7 +763,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, Color color, Color bg) {
+  Widget _buildStatItem(String label, String value, Color color, Color bg, IconData icon) {
     final isDark = _theme.isDarkMode;
     return Column(
       children: [
@@ -599,13 +773,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: isDark ? const Color(0xFF282036) : bg,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: isDark ? const Color(0xFFF78DA7) : color,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14, color: isDark ? const Color(0xFFF78DA7) : color),
+              const SizedBox(width: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: isDark ? const Color(0xFFF78DA7) : color,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 6),

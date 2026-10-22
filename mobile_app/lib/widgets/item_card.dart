@@ -207,8 +207,12 @@ class ItemCard extends StatelessWidget {
   Widget _buildPlaceholder(bool isDark) {
     return Container(
       color: isDark ? const Color(0xFF282033) : const Color(0xFFFDE8EA),
-      child: const Center(
-        child: Text('📦', style: TextStyle(fontSize: 40)),
+      child: Center(
+        child: Icon(
+          Icons.inventory_2_outlined,
+          size: 36,
+          color: isDark ? Colors.white24 : Colors.pink.shade200,
+        ),
       ),
     );
   }

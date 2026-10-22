@@ -17,11 +17,13 @@ class ItemDetailScreen extends StatefulWidget {
 
 class _ItemDetailScreenState extends State<ItemDetailScreen> {
   final _theme = ThemeService();
+  Map<String, dynamic>? _existingClaim;
 
   @override
   void initState() {
     super.initState();
     _theme.addListener(_onThemeChange);
+    _loadExistingClaim();
   }
 
   @override
@@ -32,6 +34,25 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
 
   void _onThemeChange() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _loadExistingClaim() async {
+    final user = AuthService().currentUser;
+    try {
+      final claims = await ApiService.fetchMyClaims(
+        claimantEmail: user?.email,
+        claimantId: user?.id,
+      );
+      final match = claims.cast<Map<String, dynamic>?>().firstWhere(
+        (c) => c != null && c['itemId'] == widget.item.id,
+        orElse: () => null,
+      );
+      if (mounted) {
+        setState(() {
+          _existingClaim = match;
+        });
+      }
+    } catch (_) {}
   }
 
   void _openClaimDialog() {
@@ -135,9 +156,35 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: _theme.textColor),
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              '📁 ${widget.item.category}  •  📍 ${widget.item.location}  •  📅 ${widget.item.dateOccurred}',
-                              style: TextStyle(fontSize: 11, color: _theme.subtextColor),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.category_outlined, size: 12, color: _theme.subtextColor),
+                                    const SizedBox(width: 3),
+                                    Text(widget.item.category, style: TextStyle(fontSize: 11, color: _theme.subtextColor)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.location_on_outlined, size: 12, color: _theme.subtextColor),
+                                    const SizedBox(width: 3),
+                                    Text(widget.item.location, style: TextStyle(fontSize: 11, color: _theme.subtextColor)),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.calendar_today_outlined, size: 12, color: _theme.subtextColor),
+                                    const SizedBox(width: 3),
+                                    Text(widget.item.dateOccurred, style: TextStyle(fontSize: 11, color: _theme.subtextColor)),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -292,6 +339,9 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                                     );
                                     if (context.mounted) {
                                       Navigator.pop(ctx);
+                                      if (res['success'] == true) {
+                                        _loadExistingClaim();
+                                      }
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: Text(res['success'] == true
@@ -303,7 +353,14 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                                     }
                                   }
                                 },
-                          child: Text(submitting ? 'Submitting...' : 'Confirm Ownership Claim 📝'),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.assignment_turned_in_outlined, size: 16),
+                              const SizedBox(width: 8),
+                              Text(submitting ? 'Submitting...' : 'Confirm Ownership Claim', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -348,10 +405,16 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: item.isResolved ? null : _openClaimDialog,
-              icon: const Icon(Icons.verified_user_outlined),
+              onPressed: item.status == 'CLAIMED' || item.status == 'RESOLVED' || _existingClaim != null ? null : _openClaimDialog,
+              icon: Icon(_existingClaim != null ? Icons.check_circle_outline : Icons.verified_user_outlined),
               label: Text(
-                item.isResolved ? 'Item Already Resolved' : 'Claim This Item',
+                item.status == 'RESOLVED'
+                    ? 'Item Reunited & Closed'
+                    : item.status == 'CLAIMED'
+                        ? 'Claim Approved & In Handover'
+                        : _existingClaim != null
+                            ? 'Claim Submitted (${_existingClaim!['status'] ?? 'PENDING'})'
+                            : 'Claim This Item',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -407,7 +470,11 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Text('🎁', style: TextStyle(fontSize: 20)),
+                        Icon(
+                          Icons.card_giftcard_outlined,
+                          size: 20,
+                          color: _theme.isDarkMode ? const Color(0xFFFFE066) : const Color(0xFF8B6E00),
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Reward: ${item.reward}',
@@ -431,19 +498,22 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       children: [
                         if (item.isHotspot)
                           _buildBadge(
-                            '🔥 Hotspot Zone (High Loss Area)',
+                            Icons.local_fire_department_outlined,
+                            'Hotspot Zone (High Loss Area)',
                             _theme.isDarkMode ? const Color(0xFF3D2111) : const Color(0xFFFFEDD5),
                             _theme.isDarkMode ? const Color(0xFFFF9E66) : const Color(0xFFC2410C),
                           ),
                         if (item.isMasked)
                           _buildBadge(
-                            '🆔 Masked Sensitive ID Details',
+                            Icons.badge_outlined,
+                            'Masked Sensitive ID Details',
                             _theme.isDarkMode ? const Color(0xFF281E3B) : const Color(0xFFEDE9FE),
                             _theme.isDarkMode ? const Color(0xFFC4B5FD) : const Color(0xFF6D28D9),
                           ),
                         if (item.isUrgent)
                           _buildBadge(
-                            '🚨 Urgent Campus Alert',
+                            Icons.notification_important_outlined,
+                            'Urgent Campus Alert',
                             _theme.isDarkMode ? const Color(0xFF38151B) : const Color(0xFFFDE8EA),
                             _theme.isDarkMode ? const Color(0xFFFFA1AE) : const Color(0xFFD9485E),
                           ),
@@ -456,9 +526,104 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                 _buildInfoRow(Icons.location_on_outlined, 'Campus Location', item.location),
                 _buildInfoRow(Icons.calendar_today_outlined, 'Date Occurred', item.dateOccurred),
                 _buildInfoRow(Icons.person_outline, 'Reported By', item.contactName),
-                _buildInfoRow(Icons.lock_outline, 'Student Contact', '🔒 Hidden for Safety (SVKM Protocol)'),
+                _buildInfoRow(Icons.lock_outline, 'Student Contact', 'Hidden for Safety (SVKM Protocol)'),
 
                 const SizedBox(height: 16),
+
+                if (_existingClaim != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: _existingClaim!['status'] == 'APPROVED'
+                          ? (_theme.isDarkMode ? const Color(0xFF162E20) : const Color(0xFFE8F7EE))
+                          : _existingClaim!['status'] == 'REJECTED'
+                              ? (_theme.isDarkMode ? const Color(0xFF38151B) : const Color(0xFFFDE8EA))
+                              : (_theme.isDarkMode ? const Color(0xFF332912) : const Color(0xFFFEF9C3)),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _existingClaim!['status'] == 'APPROVED'
+                            ? const Color(0xFF5BBF8E)
+                            : _existingClaim!['status'] == 'REJECTED'
+                                ? const Color(0xFFE8848F)
+                                : const Color(0xFFF59E0B),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.verified_user_outlined,
+                                  size: 16,
+                                  color: _existingClaim!['status'] == 'APPROVED'
+                                      ? const Color(0xFF2E7D32)
+                                      : _existingClaim!['status'] == 'REJECTED'
+                                          ? const Color(0xFFC62828)
+                                          : const Color(0xFFB45309),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Your Verification Claim',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: _theme.textColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: _existingClaim!['status'] == 'APPROVED'
+                                    ? const Color(0xFF5BBF8E)
+                                    : _existingClaim!['status'] == 'REJECTED'
+                                        ? const Color(0xFFE8848F)
+                                        : const Color(0xFFF59E0B),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _existingClaim!['status'] ?? 'PENDING',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Stated Proof: "${_existingClaim!['proofDetails'] ?? ''}"',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: _theme.subtextColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _existingClaim!['status'] == 'APPROVED'
+                              ? 'Handover Approved! Proceed to Ground Floor Security Desk (Gate 2) with your physical RFID Student ID Card for collection.'
+                              : _existingClaim!['status'] == 'PENDING'
+                                  ? 'Your claim is under review by campus administration. Once verified, you will receive clearance to collect it at the Ground Floor Security Desk.'
+                                  : 'Claim reviewed. Please contact campus security at Gate 2 if you have additional proof.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: _theme.subtextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Predefined Safety Messages Box
                 Container(
@@ -471,7 +636,11 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('🛡️', style: TextStyle(fontSize: 18)),
+                      Icon(
+                        Icons.shield_outlined,
+                        size: 20,
+                        color: _theme.isDarkMode ? const Color(0xFFD8C7F8) : const Color(0xFF5B21B6),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -499,7 +668,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('⚠️ Item reported for administrative review. Thank you for keeping SVKM safe.'),
+                            content: Text('Item reported for administrative review. Thank you for keeping SVKM safe.'),
                             backgroundColor: Colors.orange,
                           ),
                         );
@@ -522,7 +691,13 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
       height: 180,
       width: double.infinity,
       color: _theme.isDarkMode ? const Color(0xFF261F2E) : const Color(0xFFFDE8EA),
-      child: const Center(child: Text('📦', style: TextStyle(fontSize: 64))),
+      child: Center(
+        child: Icon(
+          Icons.inventory_2_outlined,
+          size: 56,
+          color: _theme.isDarkMode ? Colors.white24 : Colors.pink.shade200,
+        ),
+      ),
     );
   }
 
@@ -550,16 +725,23 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     );
   }
 
-  Widget _buildBadge(String label, Color bg, Color text) {
+  Widget _buildBadge(IconData icon, String label, Color bg, Color text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        label,
-        style: TextStyle(color: text, fontSize: 10, fontWeight: FontWeight.bold),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: text),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(color: text, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }

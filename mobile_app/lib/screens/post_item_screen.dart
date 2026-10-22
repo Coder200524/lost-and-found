@@ -74,7 +74,7 @@ class _PostItemScreenState extends State<PostItemScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('✨ Gemini AI suggested category: "$suggested"'),
+        content: Text('Gemini AI suggested category: "$suggested"'),
         backgroundColor: const Color(0xFF6D28D9),
       ),
     );
@@ -87,7 +87,7 @@ class _PostItemScreenState extends State<PostItemScreen> {
     if (!email.toLowerCase().endsWith('@svkmmumbai.onmicrosoft.com') && !email.toLowerCase().startsWith('admin')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Compulsory SVKM Email Suffix required: email must end with @svkmmumbai.onmicrosoft.com'),
+          content: Text('Compulsory SVKM Email Suffix required: email must end with @svkmmumbai.onmicrosoft.com'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -98,7 +98,7 @@ class _PostItemScreenState extends State<PostItemScreen> {
     if (_type == 'FOUND' && _imageCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('📸 A photo is MANDATORY for all Found items to enable verification!'),
+          content: Text('A photo is MANDATORY for all Found items to enable verification!'),
           backgroundColor: Colors.red,
         ),
       );
@@ -196,13 +196,24 @@ class _PostItemScreenState extends State<PostItemScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: () => setState(() => _type = 'LOST'),
-                    child: Text(
-                      '🔴 I Lost Something',
-                      style: TextStyle(
-                        color: _type == 'LOST' ? const Color(0xFFD9485E) : _theme.subtextColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_outlined,
+                          size: 16,
+                          color: _type == 'LOST' ? const Color(0xFFD9485E) : _theme.subtextColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'I Lost Something',
+                          style: TextStyle(
+                            color: _type == 'LOST' ? const Color(0xFFD9485E) : _theme.subtextColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -219,13 +230,24 @@ class _PostItemScreenState extends State<PostItemScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: () => setState(() => _type = 'FOUND'),
-                    child: Text(
-                      '🟢 I Found Something',
-                      style: TextStyle(
-                        color: _type == 'FOUND' ? const Color(0xFF2B9365) : _theme.subtextColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: 16,
+                          color: _type == 'FOUND' ? const Color(0xFF2B9365) : _theme.subtextColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'I Found Something',
+                          style: TextStyle(
+                            color: _type == 'FOUND' ? const Color(0xFF2B9365) : _theme.subtextColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
