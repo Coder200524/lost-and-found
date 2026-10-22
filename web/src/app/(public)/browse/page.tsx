@@ -2,6 +2,12 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import {
+  SearchLineIcon,
+  LocationLineIcon,
+  CalendarLineIcon,
+  CategoryLineIcon,
+} from '@/components/LineIcons';
 
 interface BrowsePageProps {
   searchParams: Promise<{
@@ -145,7 +151,9 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       <aside className="sidebar">
         {/* Search */}
         <form method="GET" action="/browse" className="search-wrap">
-          <span className="search-icon">🔎</span>
+          <span className="search-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <SearchLineIcon size={16} />
+          </span>
           <input
             type="text"
             name="q"
@@ -170,7 +178,9 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                   href={buildUrl({ category: c.name })}
                   className={`cat-btn ${isActive ? 'active' : ''}`}
                 >
-                  <span>{c.emoji}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <CategoryLineIcon category={c.name} size={16} />
+                  </span>
                   <span>{c.name}</span>
                   <span className="cat-count">{count}</span>
                 </Link>
@@ -357,8 +367,12 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                       />
                     ) : (
                       <>
-                        <span className="item-img-bg">{emoji}</span>
-                        <span style={{ position: 'relative', zIndex: 1 }}>{emoji}</span>
+                        <span className="item-img-bg" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <CategoryLineIcon category={item.category} size={64} style={{ opacity: 0.2 }} />
+                        </span>
+                        <span style={{ position: 'relative', zIndex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
+                          <CategoryLineIcon category={item.category} size={36} />
+                        </span>
                       </>
                     )}
                     <span className={`item-type-badge ${isLost ? 'badge-lost' : 'badge-found'}`}>
@@ -407,8 +421,14 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                     <div className="item-name">{item.title}</div>
                     <div className="item-desc">{item.description}</div>
                     <div className="item-meta">
-                      <span>📍 {item.location}</span>
-                      <span>📅 {item.dateOccurred}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <LocationLineIcon size={13} />
+                        <span>{item.location}</span>
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <CalendarLineIcon size={13} />
+                        <span>{item.dateOccurred}</span>
+                      </span>
                     </div>
 
                     {/* Claimed Items Section Details (Requirement F) */}

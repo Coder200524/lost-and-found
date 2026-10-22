@@ -2,12 +2,17 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { LocationLineIcon, CalendarLineIcon } from '@/components/LineIcons';
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect('/login?callbackUrl=/profile');
+  }
+
+  if (user.role === 'ADMIN') {
+    redirect('/admin');
   }
 
   const [userItems, userClaims] = await Promise.all([
@@ -29,174 +34,273 @@ export default async function ProfilePage() {
     }),
   ]);
 
-  const points = user.points ?? 50;
+  const points = user.points ?? 250;
+  const sapId = user.sapId || '60017240146';
+  const email = user.email || 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com';
+  const department = user.department || 'Artificial Intelligence & Machine Learning';
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '24px 20px 80px' }}>
-      {/* HERO (from profile.html) */}
-      <div className="profile-hero">
-        <div className="profile-avatar">{user.avatar || '😊'}</div>
-        <div className="profile-info">
-          <h1 className="profile-name">{user.name}</h1>
-          <div className="profile-sap">
-            SAP ID: {user.sapId || '60017240146'} &nbsp;·&nbsp; {user.email}
+    <div className="profile-container">
+      {/* HERO BANNER */}
+      <div className="profile-hero-v2">
+        <div className="profile-hero-left">
+          <div className="profile-avatar">
+            {user.avatar && user.avatar !== '👤' ? user.avatar : '👩‍💻'}
           </div>
-          <div className="profile-badges">
-            <span className="badge badge-verified">✓ Verified SVKM Student</span>
-            <span className="badge badge-dept">📘 {user.department || 'AIML'}</span>
-            <span className="badge badge-year">🎓 {user.badge || 'Campus Hero'}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 className="profile-name" style={{ fontSize: '2.1rem', marginBottom: '4px' }}>
+              {user.name}
+            </h1>
+
+            {/* Clean, Non-wrapping Metadata Pills */}
+            <div className="profile-hero-meta-pills">
+              <span className="profile-meta-pill">
+                <span>🆔</span>
+                <span>SAP:</span>
+                <code>{sapId}</code>
+              </span>
+              <span className="profile-meta-pill">
+                <span>🎫</span>
+                <span>Roll:</span>
+                <code>A090</code>
+              </span>
+              <span className="profile-meta-pill" title={email}>
+                <span>✉️</span>
+                <span>{email}</span>
+              </span>
+            </div>
+
+            {/* Department and SVKM Status Badges */}
+            <div className="profile-badges">
+              <span className="badge badge-verified">✓ Verified SVKM Student</span>
+              <span className="badge badge-dept">📘 {department}</span>
+              <span className="badge badge-year">🎓 {user.badge || 'Campus Hero'}</span>
+            </div>
           </div>
         </div>
+
+        {/* Hero Right: Points Circle & Status */}
         <div style={{ textAlign: 'center', flexShrink: 0 }}>
           <div className="points-circle">
             <span className="points-num">{points}</span>
             <span className="points-label">Points</span>
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-s)', fontWeight: 600 }}>
-            🏅 {user.badge || 'SVKM Scout'} Tier
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-s)', fontWeight: 700 }}>
+            🏅 {user.badge || 'Campus Hero'} Tier
           </div>
         </div>
       </div>
 
-      {/* CONTENT GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-        {/* LEFT COLUMN */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* MY POSTED ITEMS */}
-          <div
-            style={{
-              background: 'var(--card-bg)',
-              backdropFilter: 'blur(10px)',
-              border: '1.5px solid var(--card-border, rgba(255,255,255,0.95))',
-              borderRadius: '20px',
-              padding: '24px',
-              boxShadow: 'var(--shadow)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>📋</span> My Reported Items ({userItems.length})
-              </h3>
-              <Link href="/post" className="post-btn" style={{ padding: '6px 14px', fontSize: '0.78rem' }}>
+      {/* 4-COLUMN DESKTOP KPI BAR */}
+      <div className="profile-kpis">
+        <div className="profile-kpi-card">
+          <div className="profile-kpi-icon" style={{ background: 'rgba(232, 132, 143, 0.15)', color: 'var(--rose-d)' }}>
+            📋
+          </div>
+          <div>
+            <div className="profile-kpi-num">{userItems.length}</div>
+            <div className="profile-kpi-label">Reported Belongings</div>
+          </div>
+        </div>
+
+        <div className="profile-kpi-card">
+          <div className="profile-kpi-icon" style={{ background: 'rgba(91, 191, 142, 0.15)', color: 'var(--mint-d)' }}>
+            🛡️
+          </div>
+          <div>
+            <div className="profile-kpi-num">{userClaims.length}</div>
+            <div className="profile-kpi-label">Claims Submitted</div>
+          </div>
+        </div>
+
+        <div className="profile-kpi-card">
+          <div className="profile-kpi-icon" style={{ background: 'rgba(253, 243, 192, 0.8)', color: '#8a6a00' }}>
+            🌟
+          </div>
+          <div>
+            <div className="profile-kpi-num">{points}</div>
+            <div className="profile-kpi-label">SVKM Reward Points</div>
+          </div>
+        </div>
+
+        <div className="profile-kpi-card">
+          <div className="profile-kpi-icon" style={{ background: 'rgba(189, 168, 249, 0.2)', color: 'var(--lav-d)' }}>
+            🪪
+          </div>
+          <div>
+            <div className="profile-kpi-num" style={{ fontSize: '1.25rem' }}>Active</div>
+            <div className="profile-kpi-label">RFID &amp; Student ID</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ASYMMETRIC 2-COLUMN DESKTOP WORKSPACE */}
+      <div className="profile-main-grid">
+        {/* LEFT / PRIMARY COLUMN (65% on Desktop) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '26px', minWidth: 0 }}>
+          {/* MY REPORTED ITEMS */}
+          <div className="profile-card" id="my-items">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.15rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                  <span>📋</span> My Reported Belongings ({userItems.length})
+                </h2>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-s)', marginTop: '4px' }}>
+                  Items you have logged as Lost or Found on campus
+                </div>
+              </div>
+              <Link href="/post" className="post-btn" style={{ padding: '8px 18px', fontSize: '0.82rem', flexShrink: 0 }}>
                 + Post Item
               </Link>
             </div>
 
             {userItems.length === 0 ? (
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-s)', padding: '16px 0', textAlign: 'center' }}>
-                You haven&apos;t reported any items yet.
-              </p>
+              <div style={{ padding: '36px 0', textAlign: 'center', color: 'var(--text-s)' }}>
+                <p style={{ fontSize: '0.9rem', marginBottom: '14px' }}>
+                  You have not reported any items yet.
+                </p>
+                <Link href="/post" className="post-btn" style={{ display: 'inline-block', padding: '8px 16px', fontSize: '0.8rem' }}>
+                  Report a Lost or Found Belonging
+                </Link>
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="profile-items-grid">
                 {userItems.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={`/items/${item.id}`}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px 14px',
-                      borderRadius: '12px',
-                      background: 'rgba(0,0,0,0.02)',
-                      border: '1px solid rgba(0,0,0,0.05)',
-                      textDecoration: 'none',
-                      color: 'inherit',
-                      transition: 'all 0.15s',
-                    }}
-                  >
+                  <Link key={item.id} href={`/items/${item.id}`} className="profile-item-tile">
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{item.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-s)', marginTop: '2px' }}>
-                        📍 {item.location} &nbsp;•&nbsp; 📅 {item.dateOccurred}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+                        <span
+                          className={`item-type-badge ${
+                            item.type === 'LOST' ? 'badge-lost' : 'badge-found'
+                          }`}
+                          style={{ position: 'static' }}
+                        >
+                          {item.type}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            background: item.status === 'CLAIMED' ? 'var(--mint)' : 'rgba(0,0,0,0.05)',
+                            color: item.status === 'CLAIMED' ? 'var(--mint-d)' : 'var(--text-s)',
+                          }}
+                        >
+                          {item.status}
+                        </span>
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '6px', color: 'var(--text)' }}>
+                        {item.title}
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-s)', lineHeight: 1.4, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <LocationLineIcon size={13} />
+                        <span>{item.location}</span>
                       </div>
                     </div>
-                    <span
-                      className={`item-type-badge ${
-                        item.type === 'LOST' ? 'badge-lost' : 'badge-found'
-                      }`}
-                      style={{ position: 'static' }}
-                    >
-                      {item.type}
-                    </span>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)', fontSize: '0.74rem', color: 'var(--text-s)' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <CalendarLineIcon size={13} />
+                        <span>{item.dateOccurred}</span>
+                      </span>
+                      <span style={{ fontWeight: 600, color: 'var(--rose-d)' }}>
+                        {item.claims?.length || 0} claims
+                      </span>
+                    </div>
                   </Link>
                 ))}
               </div>
             )}
           </div>
 
-          {/* MY CLAIMS (Requirement A.3 & F) */}
-          <div
-            id="my-claims"
-            style={{
-              background: 'var(--card-bg)',
-              backdropFilter: 'blur(10px)',
-              border: '1.5px solid var(--card-border, rgba(255,255,255,0.95))',
-              borderRadius: '20px',
-              padding: '24px',
-              boxShadow: 'var(--shadow)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>📋</span> My Submitted Claims ({userClaims.length})
-              </h3>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
-                Private Verification Records
-              </span>
+          {/* MY SUBMITTED CLAIMS */}
+          <div className="profile-card" id="my-claims">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.15rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                  <span>🛡️</span> My Submitted Claims ({userClaims.length})
+                </h2>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-s)', marginTop: '4px' }}>
+                  Confidential verification records and administrative claim status
+                </div>
+              </div>
+              <Link
+                href="/browse?type=FOUND"
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  color: 'var(--rose-d)',
+                  textDecoration: 'none',
+                }}
+              >
+                Browse Found Items →
+              </Link>
             </div>
 
             {userClaims.length === 0 ? (
-              <div style={{ padding: '24px 0', textAlign: 'center' }}>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-s)', marginBottom: '12px' }}>
+              <div style={{ padding: '36px 0', textAlign: 'center', color: 'var(--text-s)' }}>
+                <p style={{ fontSize: '0.9rem', marginBottom: '14px' }}>
                   You have not submitted any ownership claims yet.
                 </p>
                 <Link
                   href="/browse?type=FOUND"
                   className="post-btn"
-                  style={{ display: 'inline-block', padding: '6px 14px', fontSize: '0.78rem' }}
+                  style={{ display: 'inline-block', padding: '8px 18px', fontSize: '0.8rem' }}
                 >
-                  Browse Found Items to Claim
+                  Browse Recovered Campus Items
                 </Link>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {userClaims.map((claim) => (
                   <div
                     key={claim.id}
                     style={{
-                      padding: '14px 16px',
-                      borderRadius: '14px',
-                      background: 'rgba(0,0,0,0.02)',
-                      border: '1px solid rgba(0,0,0,0.06)',
+                      padding: '18px 20px',
+                      borderRadius: '16px',
+                      background: 'rgba(0, 0, 0, 0.02)',
+                      border: '1.5px solid rgba(0, 0, 0, 0.06)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '8px',
+                      gap: '12px',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
                       <div>
                         <Link
                           href={`/items/${claim.itemId}`}
                           style={{
                             fontWeight: 700,
-                            fontSize: '0.92rem',
+                            fontSize: '1rem',
                             color: 'inherit',
                             textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
                           }}
                         >
-                          {claim.item.title} ↗
+                          <span>{claim.item.title}</span>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--rose-d)' }}>↗</span>
                         </Link>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-s)', marginTop: '2px' }}>
-                          📍 {claim.item.location} &nbsp;•&nbsp; 📅 Submitted {new Date(claim.createdAt).toLocaleDateString()}
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-s)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <LocationLineIcon size={13} />
+                            <span>{claim.item.location}</span>
+                          </span>
+                          <span>•</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <CalendarLineIcon size={13} />
+                            <span>Submitted {new Date(claim.createdAt).toLocaleDateString()}</span>
+                          </span>
                         </div>
                       </div>
 
                       <span
                         style={{
-                          padding: '4px 10px',
+                          padding: '5px 14px',
                           borderRadius: '50px',
-                          fontSize: '0.72rem',
+                          fontSize: '0.76rem',
                           fontWeight: 700,
                           flexShrink: 0,
                           background:
@@ -211,47 +315,57 @@ export default async function ProfilePage() {
                               : claim.status === 'REJECTED'
                               ? 'var(--rose-d)'
                               : '#8a7a00',
+                          border: `1px solid ${
+                            claim.status === 'APPROVED'
+                              ? 'rgba(91, 191, 142, 0.4)'
+                              : claim.status === 'REJECTED'
+                              ? 'rgba(232, 132, 143, 0.4)'
+                              : 'rgba(240, 216, 112, 0.6)'
+                          }`,
                         }}
                       >
                         {claim.status}
                       </span>
                     </div>
 
-                    {/* Private Details (Roll No & SAP ID) */}
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '0.72rem' }}>
-                      {claim.rollNo && (
-                        <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.05)', fontFamily: 'monospace' }}>
-                          Roll: {claim.rollNo}
-                        </span>
-                      )}
-                      {claim.sapId && (
-                        <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.05)', fontFamily: 'monospace' }}>
-                          SAP: {claim.sapId}
-                        </span>
-                      )}
-                      {claim.department && (
-                        <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.05)' }}>
-                          {claim.department}
-                        </span>
-                      )}
+                    {/* Private Student Identity Verification Strip */}
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '0.74rem' }}>
+                      <span style={{ padding: '3px 9px', borderRadius: '6px', background: 'rgba(0,0,0,0.04)', fontFamily: 'monospace', fontWeight: 600 }}>
+                        🎫 Roll: {claim.rollNo || 'A090'}
+                      </span>
+                      <span style={{ padding: '3px 9px', borderRadius: '6px', background: 'rgba(0,0,0,0.04)', fontFamily: 'monospace', fontWeight: 600 }}>
+                        🆔 SAP: {claim.sapId || sapId}
+                      </span>
+                      <span style={{ padding: '3px 9px', borderRadius: '6px', background: 'rgba(0,0,0,0.04)' }}>
+                        📘 {claim.department || department}
+                      </span>
                     </div>
 
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
-                      <strong>Your Proof:</strong> &quot;{claim.proofDetails}&quot;
+                    {/* Ownership Proof Quote */}
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text)', background: 'rgba(255,255,255,0.6)', padding: '10px 14px', borderRadius: '10px', borderLeft: '3px solid var(--rose-d)' }}>
+                      <strong>Your Stated Proof:</strong> &ldquo;{claim.proofDetails}&rdquo;
                     </div>
 
-                    {/* Relevant Status Update Guidance */}
+                    {/* Security Handover Guidance Alert */}
                     <div
                       style={{
-                        padding: '8px 10px',
-                        borderRadius: '8px',
-                        fontSize: '0.75rem',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        fontSize: '0.78rem',
+                        lineHeight: 1.5,
                         background:
                           claim.status === 'APPROVED'
                             ? 'rgba(91, 191, 142, 0.12)'
                             : claim.status === 'REJECTED'
                             ? 'rgba(232, 132, 143, 0.12)'
-                            : 'rgba(253, 243, 192, 0.4)',
+                            : 'rgba(253, 243, 192, 0.45)',
+                        border: `1px solid ${
+                          claim.status === 'APPROVED'
+                            ? 'rgba(91, 191, 142, 0.3)'
+                            : claim.status === 'REJECTED'
+                            ? 'rgba(232, 132, 143, 0.3)'
+                            : 'rgba(240, 216, 112, 0.5)'
+                        }`,
                         color:
                           claim.status === 'APPROVED'
                             ? 'var(--mint-d)'
@@ -262,15 +376,15 @@ export default async function ProfilePage() {
                     >
                       {claim.status === 'APPROVED' ? (
                         <span>
-                          🎉 <strong>Claim Approved!</strong> Visit the Ground Floor Security Desk with your SVKM ID card for physical handover.
+                          🎉 <strong>Claim Approved by Administration:</strong> Please visit the <strong>Ground Floor Security Desk</strong> with your physical <strong>SVKM Student ID card</strong> to complete handover.
                         </span>
                       ) : claim.status === 'REJECTED' ? (
                         <span>
-                          ✕ <strong>Claim Not Approved:</strong> Evidence did not sufficiently match the reported item. Contact campus security if you have more details.
+                          ✕ <strong>Claim Not Approved:</strong> The provided ownership evidence did not sufficiently match the recovered item. If you have serial numbers or additional proof, contact the security office.
                         </span>
                       ) : (
                         <span>
-                          ⏳ <strong>Pending Review:</strong> Campus faculty administrators are reviewing your submitted ownership proof.
+                          ⏳ <strong>Verification In Progress:</strong> Campus security and the student finder are reviewing your submitted ownership evidence.
                         </span>
                       )}
                     </div>
@@ -281,89 +395,37 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* MINI STATS */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <div
-              style={{
-                background: 'var(--card-bg)',
-                borderRadius: '14px',
-                padding: '16px',
-                textAlign: 'center',
-                border: '1.5px solid var(--card-border, rgba(255,255,255,0.9))',
-              }}
-            >
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700 }}>
-                {userItems.length}
-              </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-s)', marginTop: '2px' }}>
-                Items Reported
-              </div>
-            </div>
-
-            <div
-              style={{
-                background: 'var(--card-bg)',
-                borderRadius: '14px',
-                padding: '16px',
-                textAlign: 'center',
-                border: '1.5px solid var(--card-border, rgba(255,255,255,0.9))',
-              }}
-            >
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700 }}>
-                {userClaims.length}
-              </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-s)', marginTop: '2px' }}>
-                Claims Filed
-              </div>
-            </div>
-          </div>
-
-          {/* ACHIEVEMENTS */}
-          <div
-            style={{
-              background: 'var(--card-bg)',
-              backdropFilter: 'blur(10px)',
-              border: '1.5px solid var(--card-border, rgba(255,255,255,0.95))',
-              borderRadius: '20px',
-              padding: '24px',
-              boxShadow: 'var(--shadow)',
-            }}
-          >
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* RIGHT / SIDEBAR COLUMN (35% on Desktop: 380px) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '26px' }}>
+          {/* CAMPUS BADGES & ACHIEVEMENTS */}
+          <div className="profile-card">
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 16px 0' }}>
               <span>🏆</span> Campus Badges &amp; Achievements
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {/* Campus Hero - documented reward for returning items */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {/* Campus Hero */}
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '10px 12px',
-                  borderRadius: '12px',
-                  background: user.badge === 'Campus Hero' ? 'rgba(98, 222, 180, 0.12)' : 'var(--white)',
-                  border: user.badge === 'Campus Hero' ? '1.5px solid var(--mint-d)' : '1px solid rgba(0,0,0,0.06)',
+                  padding: '12px 14px',
+                  borderRadius: '14px',
+                  background: 'rgba(98, 222, 180, 0.12)',
+                  border: '1.5px solid var(--mint-d)',
                 }}
               >
-                <div style={{ fontSize: '1.5rem' }}>🏅</div>
+                <div style={{ fontSize: '1.6rem' }}>🏅</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <strong style={{ fontSize: '0.85rem' }}>Campus Hero (+50 Pts)</strong>
-                    <span
-                      style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        color: user.badge === 'Campus Hero' ? 'var(--mint-d)' : 'var(--text-s)',
-                      }}
-                    >
-                      {user.badge === 'Campus Hero' ? '✓ Unlocked' : 'Locked'}
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--mint-d)' }}>
+                      ✓ Unlocked
                     </span>
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
-                    Awarded upon administrative approval for safely returning a found belonging
-                  </span>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-s)', marginTop: '2px' }}>
+                    Awarded upon approval for safely returning a campus belonging
+                  </div>
                 </div>
               </div>
 
@@ -373,29 +435,23 @@ export default async function ProfilePage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '10px 12px',
-                  borderRadius: '12px',
-                  background: userItems.length > 0 ? 'rgba(232, 132, 143, 0.12)' : 'var(--white)',
+                  padding: '12px 14px',
+                  borderRadius: '14px',
+                  background: userItems.length > 0 ? 'rgba(232, 132, 143, 0.12)' : 'rgba(0,0,0,0.02)',
                   border: userItems.length > 0 ? '1.5px solid var(--rose-d)' : '1px solid rgba(0,0,0,0.06)',
                 }}
               >
-                <div style={{ fontSize: '1.5rem' }}>🌟</div>
+                <div style={{ fontSize: '1.6rem' }}>🌟</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <strong style={{ fontSize: '0.85rem' }}>First Report</strong>
-                    <span
-                      style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        color: userItems.length > 0 ? 'var(--rose-d)' : 'var(--text-s)',
-                      }}
-                    >
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: userItems.length > 0 ? 'var(--rose-d)' : 'var(--text-s)' }}>
                       {userItems.length > 0 ? '✓ Unlocked' : 'Locked'}
                     </span>
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
-                    Reported missing or found belongings on FinDora
-                  </span>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-s)', marginTop: '2px' }}>
+                    Logged missing or found belongings on FinDora
+                  </div>
                 </div>
               </div>
 
@@ -405,29 +461,23 @@ export default async function ProfilePage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '10px 12px',
-                  borderRadius: '12px',
-                  background: userClaims.some((c) => c.status === 'APPROVED') ? 'rgba(189, 168, 249, 0.15)' : 'var(--white)',
+                  padding: '12px 14px',
+                  borderRadius: '14px',
+                  background: userClaims.some((c) => c.status === 'APPROVED') ? 'rgba(189, 168, 249, 0.15)' : 'rgba(0,0,0,0.02)',
                   border: userClaims.some((c) => c.status === 'APPROVED') ? '1.5px solid var(--lav-d)' : '1px solid rgba(0,0,0,0.06)',
                 }}
               >
-                <div style={{ fontSize: '1.5rem' }}>🤝</div>
+                <div style={{ fontSize: '1.6rem' }}>🤝</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <strong style={{ fontSize: '0.85rem' }}>Campus Samaritan</strong>
-                    <span
-                      style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        color: userClaims.some((c) => c.status === 'APPROVED') ? 'var(--lav-d)' : 'var(--text-s)',
-                      }}
-                    >
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: userClaims.some((c) => c.status === 'APPROVED') ? 'var(--lav-d)' : 'var(--text-s)' }}>
                       {userClaims.some((c) => c.status === 'APPROVED') ? '✓ Verified' : 'In Progress'}
                     </span>
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-s)', marginTop: '2px' }}>
                     Completed successful claim verification on campus
-                  </span>
+                  </div>
                 </div>
               </div>
 
@@ -437,25 +487,67 @@ export default async function ProfilePage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '10px 12px',
-                  borderRadius: '12px',
-                  background: 'var(--white)',
+                  padding: '12px 14px',
+                  borderRadius: '14px',
+                  background: 'rgba(0,0,0,0.02)',
                   border: '1px solid rgba(0,0,0,0.06)',
                 }}
               >
-                <div style={{ fontSize: '1.5rem' }}>🤖</div>
+                <div style={{ fontSize: '1.6rem' }}>🤖</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <strong style={{ fontSize: '0.85rem' }}>AI Match Pioneer</strong>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--mint-d)' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--mint-d)' }}>
                       ✓ Active
                     </span>
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-s)' }}>
-                    Gemini AI neural matching active for your campus reports
-                  </span>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-s)', marginTop: '2px' }}>
+                    Gemini AI neural matching active for your reports
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* SECURITY DESK PHYSICAL HANDOVER INFORMATION */}
+          <div className="profile-card" style={{ background: 'linear-gradient(135deg, rgba(221, 214, 243, 0.25) 0%, rgba(249, 200, 207, 0.25) 100%)' }}>
+            <h3 style={{ fontSize: '0.98rem', fontWeight: 700, marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 14px 0' }}>
+              <span>🏢</span> SVKM Security Desk
+            </h3>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-s)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>📍</span>
+                <span><strong>Desk:</strong> Ground Floor Atrium, Gate 2</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>⏰</span>
+                <span><strong>Hours:</strong> Mon – Sat: 8:30 AM – 5:30 PM</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🪪</span>
+                <span><strong>Notice:</strong> Physical SVKM RFID Card required</span>
+              </div>
+            </div>
+            <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link
+                href="/chat"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  padding: '9px 14px',
+                  borderRadius: '10px',
+                  background: 'var(--card-bg)',
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  color: 'var(--text)',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                💬 Open Campus Safety Chat
+              </Link>
             </div>
           </div>
         </div>

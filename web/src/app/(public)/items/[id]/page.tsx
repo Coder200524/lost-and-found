@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import ClaimForm from '@/components/ClaimForm';
-import ReportMisuseButton from '@/components/ReportMisuseButton';
+import { LocationLineIcon, CalendarLineIcon, CategoryLineIcon, ShieldLineIcon, LockLineIcon, GiftLineIcon, FireLineIcon, AlertLineIcon } from '@/components/LineIcons';
 
 interface ItemPageProps {
   params: Promise<{ id: string }>;
@@ -79,18 +79,8 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
               alt={item.title}
             />
           ) : (
-            <div className="item-detail-placeholder">
-              {item.category === 'Electronics'
-                ? '📱'
-                : item.category === 'ID Cards'
-                ? '🪪'
-                : item.category === 'Bags'
-                ? '🎒'
-                : item.category === 'Water Bottles'
-                ? '🍶'
-                : item.category === 'Accessories'
-                ? '⌚'
-                : '📦'}
+            <div className="item-detail-placeholder" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CategoryLineIcon category={item.category} size={64} />
             </div>
           )}
           <div className="item-detail-badge-float">
@@ -107,8 +97,9 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
         {/* Right Column: Details & Claim Action */}
         <div className="item-detail-content">
           <div className="item-detail-topline">
-            <span className="item-cat-tag">
-              📁 {item.category}
+            <span className="item-cat-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <CategoryLineIcon category={item.category} size={14} />
+              <span>{item.category}</span>
             </span>
             <span
               className={`item-type-badge ${
@@ -147,7 +138,8 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 gap: '8px',
               }}
             >
-              <span>🎁</span> Reward Offered: {item.reward}
+              <GiftLineIcon size={16} />
+              <span>Reward Offered: {item.reward}</span>
             </div>
           )}
 
@@ -163,9 +155,13 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   background: 'rgba(255, 180, 150, 0.3)',
                   border: '1px solid rgba(255, 180, 150, 0.8)',
                   color: '#9c4500',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
                 }}
               >
-                🔥 Hotspot Incident Zone
+                <FireLineIcon size={13} />
+                <span>Hotspot Incident Zone</span>
               </span>
             )}
             {item.isMasked && (
@@ -178,9 +174,13 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   background: 'var(--lavender)',
                   border: '1px solid var(--lav-d)',
                   color: 'var(--lav-d)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
                 }}
               >
-                🆔 Sensitive ID Info Masked for Student Privacy
+                <LockLineIcon size={13} />
+                <span>Sensitive ID Info Masked for Student Privacy</span>
               </span>
             )}
             {item.isUrgent && (
@@ -193,9 +193,13 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   background: 'var(--rose)',
                   border: '1px solid var(--rose-d)',
                   color: 'var(--rose-d)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
                 }}
               >
-                🚨 Urgent Lost Alert
+                <AlertLineIcon size={13} />
+                <span>Urgent Lost Alert</span>
               </span>
             )}
           </div>
@@ -204,11 +208,17 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
           <div className="item-detail-meta-list">
             <div className="item-meta-entry">
               <span className="item-meta-k">Campus Location:</span>
-              <span className="item-meta-v">📍 {item.location}</span>
+              <span className="item-meta-v" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <LocationLineIcon size={14} />
+                <span>{item.location}</span>
+              </span>
             </div>
             <div className="item-meta-entry">
               <span className="item-meta-k">Date Reported:</span>
-              <span className="item-meta-v">🗓️ {item.dateOccurred}</span>
+              <span className="item-meta-v" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <CalendarLineIcon size={14} />
+                <span>{item.dateOccurred}</span>
+              </span>
             </div>
             <div className="item-meta-entry">
               <span className="item-meta-k">Reported By:</span>
@@ -230,17 +240,22 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                   fontSize: '0.78rem',
                   fontWeight: 700,
                   color: 'var(--rose-d)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
                 }}
               >
-                🔒 Phone/Email Protected (Hidden from Public)
+                <LockLineIcon size={13} />
+                <span>Phone/Email Protected (Hidden from Public)</span>
               </span>
             </div>
           </div>
 
           {/* SVKM Handover Safety Protocol */}
           <div className="item-safety-protocol">
-            <div className="item-safety-title">
-              <span>🛡️</span> SVKM Handover Safety Protocol:
+            <div className="item-safety-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ShieldLineIcon size={16} />
+              <span>SVKM Handover Safety Protocol:</span>
             </div>
             <p className="item-safety-text">
               Always meet at the Ground Floor Security Desk or Central Library reception. Verify proof of ownership before releasing items.
@@ -249,8 +264,9 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
 
           {/* Ownership & Claim Action Section */}
           <div className="claim-box">
-            <div className="claim-box-title">
-              <span>🛡️</span> Ownership &amp; Claim Status
+            <div className="claim-box-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ShieldLineIcon size={16} />
+              <span>Ownership &amp; Claim Status</span>
             </div>
 
             {item.status === 'RESOLVED' ? (
@@ -264,7 +280,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 }}
               >
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>
-                  🎉 Handover Completed &amp; Item Resolved
+                  Handover Completed &amp; Item Resolved
                 </div>
                 <div style={{ fontSize: '0.82rem', opacity: 0.9 }}>
                   This item has been officially verified and reunited with its rightful owner
@@ -284,7 +300,7 @@ export default async function ItemDetailPage({ params }: ItemPageProps) {
                 }}
               >
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>
-                  🔒 Claim Approved — Awaiting Safe Handover
+                  Claim Approved — Awaiting Safe Handover
                 </div>
                 <div style={{ fontSize: '0.82rem', opacity: 0.9 }}>
                   An ownership claim has been verified by campus administration

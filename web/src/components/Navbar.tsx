@@ -2,14 +2,18 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { logoutAction } from '@/actions/auth';
 import ThemeToggle from '@/components/ThemeToggle';
+import { SearchLineIcon } from '@/components/LineIcons';
 
 export default async function Navbar() {
   const user = await getCurrentUser();
 
   return (
     <nav className="findora-nav">
-      <Link href="/" className="nav-logo">
-        <span>🔍</span> FinDora
+      <Link href="/" className="nav-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--rose-d)' }}>
+          <SearchLineIcon size={20} />
+        </span>
+        <span>FinDora</span>
       </Link>
 
       <div className="nav-links">

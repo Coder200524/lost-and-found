@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SearchLineIcon } from '@/components/LineIcons';
 
 export default function Footer() {
   return (
@@ -8,8 +9,10 @@ export default function Footer() {
         <div className="footer-main">
           {/* Brand info */}
           <div className="footer-brand">
-            <Link href="/" className="footer-logo">
-              <span className="footer-logo-icon">🔍</span>
+            <Link href="/" className="footer-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span className="footer-logo-icon" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--rose-d)' }}>
+                <SearchLineIcon size={20} />
+              </span>
               <span className="footer-logo-text">FinDora</span>
             </Link>
             <p className="footer-tagline">

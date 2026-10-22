@@ -2,21 +2,21 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { CategoryLineIcon } from '@/components/LineIcons';
 
 interface CategoryItem {
   name: string;
-  emoji: string;
   href: string;
 }
 
 const CATEGORIES: CategoryItem[] = [
-  { name: 'ID Cards', emoji: '🪪', href: '/browse?category=ID+Cards' },
-  { name: 'Electronics', emoji: '📱', href: '/browse?category=Electronics' },
-  { name: 'Bags', emoji: '🎒', href: '/browse?category=Bags' },
-  { name: 'Water Bottles', emoji: '🍶', href: '/browse?category=Water+Bottles' },
-  { name: 'Stationery', emoji: '✏️', href: '/browse?category=Stationery' },
-  { name: 'Accessories', emoji: '⌚', href: '/browse?category=Accessories' },
-  { name: 'Others', emoji: '📦', href: '/browse?category=Others' },
+  { name: 'ID Cards', href: '/browse?category=ID+Cards' },
+  { name: 'Electronics', href: '/browse?category=Electronics' },
+  { name: 'Bags', href: '/browse?category=Bags' },
+  { name: 'Water Bottles', href: '/browse?category=Water+Bottles' },
+  { name: 'Stationery', href: '/browse?category=Stationery' },
+  { name: 'Accessories', href: '/browse?category=Accessories' },
+  { name: 'Others', href: '/browse?category=Others' },
 ];
 
 export default function MobileCategoryCarousel() {
@@ -178,7 +178,9 @@ export default function MobileCategoryCarousel() {
             className="mobile-cat-card"
             style={itemWidth ? { width: `${itemWidth}px`, minWidth: `${itemWidth}px`, maxWidth: `${itemWidth}px` } : undefined}
           >
-            <span className="mobile-cat-emoji">{cat.emoji}</span>
+            <span className="mobile-cat-emoji" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CategoryLineIcon category={cat.name} size={20} />
+            </span>
             <span className="mobile-cat-label">{cat.name}</span>
           </Link>
         ))}

@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { submitClaimAction } from '@/actions/claims';
+import { CategoryLineIcon, LocationLineIcon, CalendarLineIcon, AlertLineIcon, LockLineIcon } from '@/components/LineIcons';
 
 interface ClaimFormProps {
   itemId: string;
@@ -161,7 +162,7 @@ export default function ClaimForm({
               textDecoration: 'none',
             }}
           >
-            📋 View My Claims
+            View My Claims
           </Link>
           <span style={{ fontSize: '0.75rem', opacity: 0.85 }}>
             Safe Handover Protocol Active
@@ -189,10 +190,25 @@ export default function ClaimForm({
           <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>
             Claiming Item: {itemTitle}
           </div>
-          <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', color: 'var(--text-s)', flexWrap: 'wrap' }}>
-            {itemCategory && <span>📁 {itemCategory}</span>}
-            {itemLocation && <span>📍 {itemLocation}</span>}
-            {itemDate && <span>📅 {itemDate}</span>}
+          <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', color: 'var(--text-s)', flexWrap: 'wrap', alignItems: 'center' }}>
+            {itemCategory && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <CategoryLineIcon category={itemCategory} size={13} />
+                <span>{itemCategory}</span>
+              </span>
+            )}
+            {itemLocation && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <LocationLineIcon size={13} />
+                <span>{itemLocation}</span>
+              </span>
+            )}
+            {itemDate && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <CalendarLineIcon size={13} />
+                <span>{itemDate}</span>
+              </span>
+            )}
           </div>
         </div>
       )}
@@ -207,9 +223,13 @@ export default function ClaimForm({
             color: 'var(--rose-d)',
             fontSize: '0.82rem',
             fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
           }}
         >
-          ⚠️ {error}
+          <AlertLineIcon size={14} />
+          <span>{error}</span>
         </div>
       )}
 
@@ -353,7 +373,7 @@ export default function ClaimForm({
           className="claim-textarea"
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px', fontSize: '0.72rem', color: 'var(--text-s)' }}>
-          <span>🔒</span>
+          <LockLineIcon size={12} />
           <span>Proof details are kept strictly private to authorized campus reviewers.</span>
         </div>
       </div>
@@ -363,7 +383,7 @@ export default function ClaimForm({
         disabled={loading}
         className="claim-btn"
       >
-        {loading ? 'Validating & Submitting...' : 'Confirm Ownership Claim 📋'}
+        {loading ? 'Validating & Submitting...' : 'Confirm Ownership Claim'}
       </button>
     </form>
   );

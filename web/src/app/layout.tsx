@@ -5,8 +5,8 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 // Root SEO Engineering (FST Unit 6: Metadata API)
 export const metadata: Metadata = {
   title: {
-    default: 'FinDora — DJSCE Campus Lost & Found',
-    template: '%s | FinDora DJSCE',
+    default: 'FinDora',
+    template: '%s | FinDora',
   },
   description:
     'Dwarkadas J. Sanghvi College of Engineering official lost and found portal. Report items, track claims, and match belongings with Gemini AI.',

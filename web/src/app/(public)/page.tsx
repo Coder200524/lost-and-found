@@ -4,6 +4,20 @@ import { getCurrentUser } from '@/lib/auth';
 import MobileCategoryCarousel from '@/components/MobileCategoryCarousel';
 import MobileFeatureCards from '@/components/MobileFeatureCards';
 import Footer from '@/components/Footer';
+import {
+  SearchLineIcon,
+  PlusLineIcon,
+  LocationLineIcon,
+  CalendarLineIcon,
+  IdCardLineIcon,
+  ElectronicsLineIcon,
+  BagsLineIcon,
+  WaterBottleLineIcon,
+  StationeryLineIcon,
+  AccessoriesLineIcon,
+  OthersLineIcon,
+  CategoryLineIcon,
+} from '@/components/LineIcons';
 
 export default async function HomePage() {
   const [totalItems, resolvedCount, recentItems, currentUser] = await Promise.all([
@@ -51,20 +65,24 @@ export default async function HomePage() {
           <div className="hero-actions">
             {currentUser ? (
               <>
-                <Link href="/browse" className="btn-primary">
-                  🔍 Browse Catalog
+                <Link href="/browse" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <SearchLineIcon size={16} />
+                  <span>Browse Catalog</span>
                 </Link>
-                <Link href="/post" className="btn-secondary">
-                  ➕ Report Item
+                <Link href="/post" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <PlusLineIcon size={16} />
+                  <span>Report Item</span>
                 </Link>
               </>
             ) : (
               <>
-                <Link href="/login" className="btn-primary">
-                  🚀 Student Sign In
+                <Link href="/login" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <PlusLineIcon size={16} />
+                  <span>Student Sign In</span>
                 </Link>
-                <Link href="/login?callbackUrl=/browse" className="btn-secondary">
-                  🔒 Browse Items
+                <Link href="/login?callbackUrl=/browse" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <SearchLineIcon size={16} />
+                  <span>Browse Items</span>
                 </Link>
               </>
             )}
@@ -249,26 +267,33 @@ export default async function HomePage() {
         
         {/* Desktop Categories Grid */}
         <div className="cats-grid cats-grid-desktop">
-          <Link href="/browse?category=ID+Cards" className="cat-pill">
-            <span>🪪</span> ID Cards
+          <Link href="/browse?category=ID+Cards" className="cat-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', color: 'currentColor' }}><IdCardLineIcon size={18} /></span>
+            <span>ID Cards</span>
           </Link>
-          <Link href="/browse?category=Electronics" className="cat-pill">
-            <span>📱</span> Electronics
+          <Link href="/browse?category=Electronics" className="cat-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', color: 'currentColor' }}><ElectronicsLineIcon size={18} /></span>
+            <span>Electronics</span>
           </Link>
-          <Link href="/browse?category=Bags" className="cat-pill">
-            <span>🎒</span> Bags
+          <Link href="/browse?category=Bags" className="cat-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', color: 'currentColor' }}><BagsLineIcon size={18} /></span>
+            <span>Bags</span>
           </Link>
-          <Link href="/browse?category=Water+Bottles" className="cat-pill">
-            <span>🍶</span> Water Bottles
+          <Link href="/browse?category=Water+Bottles" className="cat-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', color: 'currentColor' }}><WaterBottleLineIcon size={18} /></span>
+            <span>Water Bottles</span>
           </Link>
-          <Link href="/browse?category=Stationery" className="cat-pill">
-            <span>✏️</span> Stationery
+          <Link href="/browse?category=Stationery" className="cat-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', color: 'currentColor' }}><StationeryLineIcon size={18} /></span>
+            <span>Stationery</span>
           </Link>
-          <Link href="/browse?category=Accessories" className="cat-pill">
-            <span>⌚</span> Accessories
+          <Link href="/browse?category=Accessories" className="cat-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', color: 'currentColor' }}><AccessoriesLineIcon size={18} /></span>
+            <span>Accessories</span>
           </Link>
-          <Link href="/browse?category=Others" className="cat-pill">
-            <span>📦</span> Others
+          <Link href="/browse?category=Others" className="cat-pill" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', color: 'currentColor' }}><OthersLineIcon size={18} /></span>
+            <span>Others</span>
           </Link>
         </div>
 
@@ -300,8 +325,12 @@ export default async function HomePage() {
               return (
                 <div key={item.id} className="item-card">
                   <div className="item-img">
-                    <span className="item-img-bg">{emoji}</span>
-                    <span style={{ position: 'relative', zIndex: 1 }}>{emoji}</span>
+                    <span className="item-img-bg" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CategoryLineIcon category={item.category} size={64} style={{ opacity: 0.2 }} />
+                    </span>
+                    <span style={{ position: 'relative', zIndex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
+                      <CategoryLineIcon category={item.category} size={36} />
+                    </span>
                     <span
                       className={`item-type-badge ${isLost ? 'badge-lost' : 'badge-found'}`}
                     >
@@ -316,8 +345,14 @@ export default async function HomePage() {
                     <div className="item-name">{item.title}</div>
                     <div className="item-desc">{item.description}</div>
                     <div className="item-meta">
-                      <span>📍 {item.location}</span>
-                      <span>📅 {item.dateOccurred}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <LocationLineIcon size={13} />
+                        <span>{item.location}</span>
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <CalendarLineIcon size={13} />
+                        <span>{item.dateOccurred}</span>
+                      </span>
                     </div>
                     <div className="item-footer">
                       <Link href={`/items/${item.id}`} className="btn-sm btn-view">
