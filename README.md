@@ -16,6 +16,8 @@
 6. [API Endpoints Reference](#api-endpoints-reference)
 7. [Pre-configured Test Accounts (RBAC)](#pre-configured-test-accounts-rbac)
 8. [How to Run the Project Locally](#how-to-run-the-project-locally)
+9. [Monochrome Line Icons Design System & Desktop Optimization](#8-monochrome-line-icons-design-system--desktop-optimization)
+10. [Role-Based Portal Architecture (Admin vs Student Profile Separation)](#9-role-based-portal-architecture-admin-vs-student-profile-separation)
 
 ---
 
@@ -74,6 +76,12 @@ Below is the complete, step-by-step chronological record of all commands run and
 | **37** | Claim Schema & Validation | `prisma/schema.prisma`, `claims.ts`, `/api/claims` | Added `rollNo`, `sapId`, `department`, `academicYear` to Prisma `Claim` model; enforced Roll No (`^[A-Za-z][0-9]{3}$`), SAP ID (`^6[0-9]{11}$`), required proof, duplicate claim rejection, and item/claim status decoupling. |
 | **38** | 4-Section Discovery UI | `browse/page.tsx`, `profile/page.tsx`, `browse_screen.dart` | Structured 4 isolated sections: Active Lost Items, Active Found Items, My Claims (with item link and real-time status), and Claimed Items (with verified owner name & handover status). |
 | **39** | Admin Verification & Handover | `admin/page.tsx`, `claims.ts` | Added student identity card verification in `/admin`, competing claim prevention, finder reward (+50 pts & badge), Mongoose audit logs, and Handover Queue for marking items `RESOLVED`. |
+| **40** | Desktop Profile Workspace | `web/src/app/(dashboard)/profile/page.tsx`, `globals.css` | Rebuilt profile for desktop screens (`max-width: 1360px`, 4-metric KPI analytics ribbon, asymmetric 2-column workspace 65%/35%, clean metadata tags, and hover micro-interactions). |
+| **41** | Monochrome Line Icon System | `web/src/components/LineIcons.tsx`, `mobile_app` screens | Designed custom reusable monochrome SVG line icons library (`LineIcons.tsx`) and mapped Flutter outline icons (`Icons.*_outlined`), completely replacing colorful OS emojis across all web and mobile views. |
+| **42** | Mobile Claim Validation Parity | `mobile_app/lib/screens/item_detail_screen.dart` | Brought Flutter claim modal into 100% parity with web: enforced SVKM email (`@svkmmumbai.onmicrosoft.com`), Roll No (`^[A-Za-z][0-9]{3}$`), SAP ID (`^6[0-9]{10,11}$`), department/year selectors, and substantive proof. |
+| **43** | Real-Time Claim Status Banner | `mobile_app/lib/screens/item_detail_screen.dart` | Added `_existingClaim` live check to show user's pending claim banner, stated proof quote, and Ground Floor Security Desk (Gate 2) handover instructions directly on the item details screen. |
+| **44** | Admin vs Student Portal Isolation | `profile_screen.dart`, `web/src/app/(dashboard)/profile/page.tsx` | Completely removed "My Submitted Claims" from Admin profile, keeping it strictly for students. On web, admins navigating to `/profile` are redirected to `/admin`; on mobile, admins see Faculty Security Console management. |
+| **45** | Static Analysis & Verification | `flutter analyze` & Next.js Webpack validation | Validated entire codebase with static analyzer (0 issues found across all Dart screens) and verified Next.js App Router routes. |
 
 ---
 
@@ -578,4 +586,33 @@ The entire workflow has been tested and verified across both platforms:
 | **RBAC Security** | Non-admin accesses `/admin` or sends claim approval API | Blocked with 307 redirect / 403 Forbidden | ✅ PASS |
 | **Build & Type Checking** | `npm run build --webpack` in `web/` | 19/19 routes compiled cleanly (0 errors) | ✅ PASS |
 | **Mobile Dart Analysis** | `flutter analyze` in `mobile_app/` | 0 errors, 0 warnings (clean analysis) | ✅ PASS |
+| **Mobile Roll & SAP ID Validation** | Input `A090` & `60017240146` | Flutter form validates and accepts credentials matching SVKM regex | ✅ PASS |
+| **Mobile Proof Requirement** | Input `< 5` characters | Modal prevents submit: `Please provide substantive proof (min 5 characters)` | ✅ PASS |
+| **Mobile Real-Time Claim Banner** | Open item claimed by active student | Displays "Your Verification Claim" box with status, proof quote & Gate 2 protocol | ✅ PASS |
+| **Admin Profile Claims Removal** | Log in as `Admin Sharma` in mobile app | "My Submitted Claims" card completely removed; displays Faculty Security Console | ✅ PASS |
+| **Web Admin Profile Redirect** | Navigate to `/profile` as Admin | Automatically redirects to `/admin` security console | ✅ PASS |
+| **Monochrome Line Icons** | Inspect UI elements on web & mobile | 100% clean vector line icons rendered; no colorful OS emojis | ✅ PASS |
 
+---
+
+### 8. Monochrome Line Icons Design System & Desktop Optimization
+
+#### Custom Line Icons Component (`LineIcons.tsx`)
+Rather than relying on inconsistent, colorful native OS emojis across Windows, macOS, Android, and iOS, the platform features a unified, minimalist monochrome line icon system:
+- **Web Implementation:** Created [`LineIcons.tsx`](file:///c:/Users/SURUCHI/Desktop/ADF%20n%20FST/web/src/components/LineIcons.tsx) housing scalable vector SVG line components (`SearchLineIcon`, `PlusLineIcon`, `LocationLineIcon`, `CalendarLineIcon`, `CategoryLineIcon`, `IdCardLineIcon`, `ElectronicsLineIcon`, `BagsLineIcon`, `WaterBottleLineIcon`, `StationeryLineIcon`, `AccessoriesLineIcon`, `OthersLineIcon`, `ShieldLineIcon`, `LockLineIcon`, `GiftLineIcon`, `FireLineIcon`, `AlertLineIcon`).
+- **Mobile Parity:** Replaced emojis across Flutter screens (`home_screen.dart`, `browse_screen.dart`, `item_detail_screen.dart`, `swipe_screen.dart`, `chat_screen.dart`, `profile_screen.dart`, `admin_screen.dart`) using Google Material outline icons (`Icons.*_outlined`).
+- **Desktop Widescreen Layout:** Formatted `/profile` for high-resolution desktop displays (`max-width: 1360px`, 4-metric KPI analytics ribbon, 2-column asymmetric desktop grid with 65% primary activity and 35% side cards).
+
+---
+
+### 9. Role-Based Portal Architecture (Admin vs Student Profile Separation)
+
+To ensure clean role-based boundaries between campus faculty administrators and students:
+- **Student Profile View:**
+  - Displays SVKM reward points, badge status tier, active campus claims under review, and personalized handover instructions.
+  - Houses the **"My Submitted Claims"** container showing Roll Number, SAP ID, Department pills, quoted proof, and real-time status (`PENDING`, `APPROVED`, `REJECTED`).
+- **Admin Portal Isolation:**
+  - **Mobile:** When logged in with `ADMIN` role, the **"My Submitted Claims"** section is completely removed from the profile screen, ensuring administrators do not see empty student claim queues. In its place, the profile displays the **Faculty Security Console** card, administrative role credentials, and direct links to the moderation queue.
+  - **Web:** Any direct visit to `/profile` by an authenticated administrator automatically issues a redirect to the `/admin` console.
+
+---
