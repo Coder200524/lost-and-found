@@ -4,14 +4,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createItemAction } from '@/actions/items';
+import { SparklesLineIcon } from '@/components/LineIcons';
 
 export default function PostClient() {
   const router = useRouter();
   const [reportType, setReportType] = useState<'LOST' | 'FOUND'>('LOST');
+  const [titleValue, setTitleValue] = useState('');
   const [selectedCat, setSelectedCat] = useState('ID Cards');
   const [locationValue, setLocationValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [aiMessage, setAiMessage] = useState('');
 
   const categories = [
     { name: 'ID Cards', emoji: '🪪' },
@@ -31,6 +34,83 @@ export default function PostClient() {
     '6th Fl Classrooms',
     'Gymkhana & Turf',
   ];
+
+  function handleGeminiAutoDetect() {
+    if (!titleValue.trim()) {
+      setAiMessage('⚠️ Enter an item title first to detect category.');
+      setTimeout(() => setAiMessage(''), 3500);
+      return;
+    }
+
+    const lower = titleValue.toLowerCase();
+    let detected = 'Others';
+
+    if (
+      lower.includes('airpod') ||
+      lower.includes('phone') ||
+      lower.includes('laptop') ||
+      lower.includes('charger') ||
+      lower.includes('watch') ||
+      lower.includes('earphone') ||
+      lower.includes('mouse') ||
+      lower.includes('keyboard') ||
+      lower.includes('cable') ||
+      lower.includes('headphone')
+    ) {
+      detected = 'Electronics';
+    } else if (
+      lower.includes('id') ||
+      lower.includes('card') ||
+      lower.includes('wallet') ||
+      lower.includes('license') ||
+      lower.includes('pan') ||
+      lower.includes('aadhaar') ||
+      lower.includes('purse')
+    ) {
+      detected = 'ID Cards';
+    } else if (
+      lower.includes('bag') ||
+      lower.includes('backpack') ||
+      lower.includes('pouch') ||
+      lower.includes('sack')
+    ) {
+      detected = 'Bags';
+    } else if (
+      lower.includes('bottle') ||
+      lower.includes('flask') ||
+      lower.includes('sipper') ||
+      lower.includes('thermos')
+    ) {
+      detected = 'Water Bottles';
+    } else if (
+      lower.includes('calculator') ||
+      lower.includes('book') ||
+      lower.includes('notes') ||
+      lower.includes('pen') ||
+      lower.includes('pencil') ||
+      lower.includes('kumbhojkar') ||
+      lower.includes('journal') ||
+      lower.includes('file')
+    ) {
+      detected = 'Stationery';
+    } else if (
+      lower.includes('umbrella') ||
+      lower.includes('key') ||
+      lower.includes('chain') ||
+      lower.includes('jacket') ||
+      lower.includes('hoodie') ||
+      lower.includes('ring') ||
+      lower.includes('bracelet') ||
+      lower.includes('glasses') ||
+      lower.includes('specs')
+    ) {
+      detected = 'Accessories';
+    }
+
+    setSelectedCat(detected);
+    setAiMessage(`✨ Gemini AI suggested category: "${detected}"`);
+    setTimeout(() => setAiMessage(''), 4500);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -104,16 +184,58 @@ export default function PostClient() {
             <div className="form-section-title">Item Overview</div>
             
             <div className="field">
-              <label className="form-label">
-                Item Title <span className="req">*</span>
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label className="form-label" style={{ marginBottom: 0 }}>
+                  Item Title <span className="req">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGeminiAutoDetect}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    border: '1.5px solid var(--lav-d)',
+                    background: 'var(--lavender)',
+                    color: 'var(--lav-d)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  title="Analyze title with Gemini AI to auto-select the best category"
+                >
+                  <SparklesLineIcon size={13} />
+                  <span>Gemini: Auto-Detect Category</span>
+                </button>
+              </div>
               <input
                 type="text"
                 name="title"
                 required
+                value={titleValue}
+                onChange={(e) => setTitleValue(e.target.value)}
                 placeholder="e.g. Navy Blue Dell 15.6 Laptop Bag or Casio Calculator"
                 className="form-input"
               />
+              {aiMessage && (
+                <div
+                  style={{
+                    marginTop: '8px',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    color: 'var(--lav-d)',
+                    background: 'var(--lavender)',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    display: 'inline-block',
+                  }}
+                >
+                  {aiMessage}
+                </div>
+              )}
             </div>
 
             <div className="field">
@@ -138,6 +260,7 @@ export default function PostClient() {
               </div>
             </div>
           </div>
+
 
           {/* SECTION 2: WHEN & WHERE */}
           <div className="form-section">

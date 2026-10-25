@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import ClaimForm from '@/components/ClaimForm';
+import ReportMisuseButton from '@/components/ReportMisuseButton';
 import { LocationLineIcon, CalendarLineIcon, CategoryLineIcon, ShieldLineIcon, LockLineIcon, GiftLineIcon, FireLineIcon, AlertLineIcon } from '@/components/LineIcons';
 
 interface ItemPageProps {

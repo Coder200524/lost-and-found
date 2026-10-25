@@ -2391,9 +2391,23 @@ textarea.form-input:focus {
    ITEM DETAIL & CLAIM VIEWPORT (FST Full-Stack Spec)
    ========================================================================== */
 .item-detail-wrap {
-  max-width: 1040px;
+  max-width: 1560px;
+  width: 95%;
   margin: 0 auto;
-  padding: 32px 20px 80px;
+  padding: 32px 24px 80px;
+}
+@media (min-width: 1400px) {
+  .item-detail-wrap {
+    max-width: 1680px;
+    width: 96%;
+    padding: 36px 32px 90px;
+  }
+}
+@media (max-width: 860px) {
+  .item-detail-wrap {
+    width: 100%;
+    padding: 20px 16px 60px;
+  }
 }
 .item-detail-nav {
   display: flex;
@@ -2424,8 +2438,14 @@ textarea.form-input:focus {
   box-shadow: 0 16px 48px rgba(140, 100, 130, 0.1);
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 1.05fr;
+  grid-template-columns: 1fr 1.1fr;
+  align-items: stretch;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+@media (min-width: 1400px) {
+  .item-detail-card {
+    grid-template-columns: 1.05fr 1.2fr;
+  }
 }
 @media (max-width: 860px) {
   .item-detail-card {
@@ -2436,7 +2456,7 @@ textarea.form-input:focus {
 .item-detail-media {
   position: relative;
   background: linear-gradient(135deg, rgba(249, 200, 207, 0.25), rgba(196, 234, 217, 0.25));
-  min-height: 380px;
+  min-height: 440px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2453,8 +2473,9 @@ textarea.form-input:focus {
 .item-detail-media img {
   width: 100%;
   height: 100%;
+  min-height: 100%;
   object-fit: cover;
-  max-height: 520px;
+  display: block;
 }
 .item-detail-placeholder {
   font-size: 5rem;
@@ -2471,10 +2492,22 @@ textarea.form-input:focus {
 }
 
 .item-detail-content {
-  padding: 32px 28px;
+  padding: 36px 36px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
+}
+@media (min-width: 1200px) {
+  .item-detail-content {
+    padding: 42px 48px;
+    gap: 22px;
+  }
+}
+@media (max-width: 860px) {
+  .item-detail-content {
+    padding: 24px 20px;
+    gap: 16px;
+  }
 }
 .item-detail-topline {
   display: flex;
@@ -2496,7 +2529,7 @@ textarea.form-input:focus {
 }
 .item-detail-heading {
   font-family: var(--font-serif);
-  font-size: 1.85rem;
+  font-size: clamp(1.85rem, 2.5vw, 2.4rem);
   font-weight: 700;
   color: var(--text);
   line-height: 1.25;

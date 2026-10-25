@@ -14,12 +14,21 @@ export async function loginAction(formData: FormData) {
     return { success: false, error: 'SVKM SAP ID or Email and password required' };
   }
 
+  const idLower = identifier.toLowerCase();
+  const candidateEmails = [idLower];
+  if (idLower === 'admin' || idLower === 'admin-001' || idLower.startsWith('admin')) {
+    candidateEmails.push('admin@djsce.edu', 'admin@djsce.edu.in');
+  }
+  if (idLower === 'suruchi' || idLower === '60017240146' || idLower.includes('suruchi.makwana')) {
+    candidateEmails.push('suruchi.makwana46@svkmmumbai.onmicrosoft.com', 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com');
+  }
+
   const user = await prisma.user.findFirst({
     where: {
       OR: [
-        { email: identifier.toLowerCase() },
-        { sapId: identifier },
-        { collegeId: identifier },
+        { email: { in: candidateEmails } },
+        { sapId: { in: [identifier, identifier.toUpperCase(), idLower] } },
+        { collegeId: { in: [identifier, identifier.toUpperCase()] } },
       ],
     },
   });

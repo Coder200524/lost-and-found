@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import { logoutAction } from '@/actions/auth';
 import ThemeToggle from '@/components/ThemeToggle';
-import { SearchLineIcon } from '@/components/LineIcons';
+import { SearchLineIcon, SparklesLineIcon } from '@/components/LineIcons';
 
 export default async function Navbar() {
   const user = await getCurrentUser();
@@ -19,6 +19,10 @@ export default async function Navbar() {
       <div className="nav-links">
         <Link href="/browse">Browse</Link>
         <Link href="/post">Post Item</Link>
+        <Link href="/match" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+          <SparklesLineIcon size={14} />
+          <span>Gemini Match</span>
+        </Link>
         <Link href="/swipe">Swipe</Link>
         <Link href="/chat">Chat</Link>
         {user?.role === 'ADMIN' && <Link href="/admin">Admin</Link>}

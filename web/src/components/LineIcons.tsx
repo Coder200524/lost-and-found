@@ -257,16 +257,27 @@ export function OthersLineIcon({ size = 16, className = '', ...props }: IconProp
 }
 
 // Category helper: Returns the appropriate line monochrome icon component for any category name
-export function CategoryLineIcon({ category, size = 16, className = '' }: { category: string; size?: number | string; className?: string }) {
+export function CategoryLineIcon({
+  category,
+  size = 16,
+  className = '',
+  style,
+}: {
+  category: string;
+  size?: number | string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   const norm = (category || '').toLowerCase().trim();
-  if (norm.includes('id') || norm.includes('card')) return <IdCardLineIcon size={size} className={className} />;
-  if (norm.includes('elect') || norm.includes('phone') || norm.includes('laptop')) return <ElectronicsLineIcon size={size} className={className} />;
-  if (norm.includes('bag') || norm.includes('backpack')) return <BagsLineIcon size={size} className={className} />;
-  if (norm.includes('bottle') || norm.includes('water')) return <WaterBottleLineIcon size={size} className={className} />;
-  if (norm.includes('station') || norm.includes('pen') || norm.includes('book')) return <StationeryLineIcon size={size} className={className} />;
-  if (norm.includes('access') || norm.includes('watch') || norm.includes('glass')) return <AccessoriesLineIcon size={size} className={className} />;
-  return <OthersLineIcon size={size} className={className} />;
+  if (norm.includes('id') || norm.includes('card')) return <IdCardLineIcon size={size} className={className} style={style} />;
+  if (norm.includes('elect') || norm.includes('phone') || norm.includes('laptop')) return <ElectronicsLineIcon size={size} className={className} style={style} />;
+  if (norm.includes('bag') || norm.includes('backpack')) return <BagsLineIcon size={size} className={className} style={style} />;
+  if (norm.includes('bottle') || norm.includes('water')) return <WaterBottleLineIcon size={size} className={className} style={style} />;
+  if (norm.includes('station') || norm.includes('pen') || norm.includes('book')) return <StationeryLineIcon size={size} className={className} style={style} />;
+  if (norm.includes('access') || norm.includes('watch') || norm.includes('glass')) return <AccessoriesLineIcon size={size} className={className} style={style} />;
+  return <OthersLineIcon size={size} className={className} style={style} />;
 }
+
 
 // 12. Shield Line Icon
 export function ShieldLineIcon({ size = 16, className = '', ...props }: IconProps) {
@@ -379,4 +390,30 @@ export function AlertLineIcon({ size = 16, className = '', ...props }: IconProps
     </svg>
   );
 }
+
+// 17. Sparkles / AI Line Icon (Gemini AI)
+export function SparklesLineIcon({ size = 16, className = '', ...props }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
+      {...props}
+    >
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+      <path d="M5 3v4" />
+      <path d="M19 17v4" />
+      <path d="M3 5h4" />
+      <path d="M17 19h4" />
+    </svg>
+  );
+}
+
 

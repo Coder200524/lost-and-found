@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (idLower === 'suruchi' || idLower === '60017240146' || idLower.includes('suruchi.makwana')) {
       candidateEmails.push('suruchi.makwana46@svkmmumbai.onmicrosoft.com', 'SURUCHI.MAKWANA46@svkmmumbai.onmicrosoft.com');
     }
-    if (idLower === 'admin' || idLower === 'admin-001') {
+    if (idLower === 'admin' || idLower === 'admin-001' || idLower.startsWith('admin')) {
       candidateEmails.push('admin@djsce.edu', 'admin@djsce.edu.in');
     }
 

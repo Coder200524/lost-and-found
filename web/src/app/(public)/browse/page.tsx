@@ -7,6 +7,7 @@ import {
   LocationLineIcon,
   CalendarLineIcon,
   CategoryLineIcon,
+  SparklesLineIcon,
 } from '@/components/LineIcons';
 
 interface BrowsePageProps {
@@ -242,6 +243,25 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           <div className="main-actions">
             <Link href="/post" className="post-btn">
               <span>+</span> Post Item
+            </Link>
+            <Link
+              href="/match"
+              className="btn-secondary"
+              style={{
+                padding: '9px 18px',
+                borderRadius: '10px',
+                fontSize: '0.86rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--lavender)',
+                color: 'var(--lav-d)',
+                border: '1.5px solid var(--lav-d)',
+                fontWeight: 700,
+              }}
+            >
+              <SparklesLineIcon size={14} />
+              <span>Gemini Matcher</span>
             </Link>
             <Link
               href="/swipe"

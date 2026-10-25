@@ -31,7 +31,12 @@
 4. **Admin Security & Moderation Console (`/admin`):**
    - Review pending verification claims, examine confidential proof of ownership, approve/reject claims with competing claim auto-locking, award finder points (+50 pts), and manage the physical Handover Queue.
    - Role-based guard automatically redirects non-admins and routes admins navigating to `/profile` directly to `/admin`.
-5. **REST API Backend for Flutter Mobile App:**
+5. **Gemini AI Assistance & Semantic Matcher (`/match` & `/api/ai/match`):**
+   - **Category Auto-Detection (`/post`):** Natural language category detection button on item report form that parses descriptions and selects appropriate category pills.
+   - **Interactive Gemini Campus Matcher (`/match`):** Real-time semantic matching comparing lost against found items (and vice versa) with confidence percentage scores (up to 98%), keyword overlap breakdown, and campus handover recommendations.
+   - **Dual-Mode Engine:** Automatically connects to Google's `gemini-1.5-flash` model when `GEMINI_API_KEY` is set in `.env`, while maintaining a local heuristic semantic engine as a resilient offline fallback for viva evaluation.
+   - **Swipe Matcher (`/swipe`):** Tinder-style physics gesture stack for fast catalog review.
+6. **REST API Backend for Flutter Mobile App:**
    - Exposes `/api/items`, `/api/claims`, `/api/chat`, `/api/auth/*`, and `/api/ai/match`.
 
 ---
