@@ -20,16 +20,19 @@ import {
 } from '@/components/LineIcons';
 
 export default async function HomePage() {
-  const [totalItems, resolvedCount, recentItems, currentUser] = await Promise.all([
-    prisma.item.count(),
-    prisma.item.count({ where: { status: { in: ['CLAIMED', 'RESOLVED'] } } }),
-    prisma.item.findMany({
-      take: 6,
-      orderBy: { createdAt: 'desc' },
-      include: { user: true },
-    }),
-    getCurrentUser(),
-  ]);
+  let resolvedCount = 0;
+  let currentUser = null;
+
+  try {
+    const [count, user] = await Promise.all([
+      prisma.item.count({ where: { status: { in: ['CLAIMED', 'RESOLVED'] } } }).catch(() => 0),
+      getCurrentUser().catch(() => null),
+    ]);
+    resolvedCount = count;
+    currentUser = user;
+  } catch (err) {
+    console.warn('HomePage DB query error (graceful fallback):', err);
+  }
 
   const categoryEmojiMap: Record<string, string> = {
     'ID Cards': '🪪',
