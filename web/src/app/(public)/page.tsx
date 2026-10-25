@@ -20,15 +20,25 @@ import {
 } from '@/components/LineIcons';
 
 export default async function HomePage() {
+  let totalItems = 0;
   let resolvedCount = 0;
-  let currentUser = null;
+  let recentItems: any[] = [];
+  let currentUser: any = null;
 
   try {
-    const [count, user] = await Promise.all([
+    const [total, resolved, items, user] = await Promise.all([
+      prisma.item.count().catch(() => 0),
       prisma.item.count({ where: { status: { in: ['CLAIMED', 'RESOLVED'] } } }).catch(() => 0),
+      prisma.item.findMany({
+        take: 6,
+        orderBy: { createdAt: 'desc' },
+        include: { user: true },
+      }).catch(() => []),
       getCurrentUser().catch(() => null),
     ]);
-    resolvedCount = count;
+    totalItems = total;
+    resolvedCount = resolved;
+    recentItems = items;
     currentUser = user;
   } catch (err) {
     console.warn('HomePage DB query error (graceful fallback):', err);
